@@ -12,3 +12,4 @@ pydub
 newspaper3k
 gunicorn
 sumy
+lxml_html_clean
