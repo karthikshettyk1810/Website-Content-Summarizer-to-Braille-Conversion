@@ -5,6 +5,8 @@ import base64
 import tempfile
 import json
 import urllib.parse
+import urllib3
+import logging
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from bs4 import BeautifulSoup
@@ -29,6 +31,13 @@ from transformers import pipeline, BartTokenizer, BartForConditionalGeneration
 import openai
 import threading
 import datetime
+
+# Disable InsecureRequestWarning
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load OpenAI API key from environment file
 print("Loading OpenAI API key from openAi.env file...")
@@ -250,16 +259,21 @@ def index():
 def search_topic():
     data = request.json
     topic = data.get('topic')
+    logger.debug(f"Search request received for topic: {topic}")
+    
     if not topic:
+        logger.warning("No topic provided in search request")
         return jsonify({'error': 'No topic provided'}), 400
 
     try:
         # Prepare results list - limit to just two results to make it faster
         results = []
+        logger.debug(f"Starting search for topic: {topic}")
         
         # First try Wikipedia
         # Format the topic properly for Wikipedia URL (capitalize first letter of each word)
         formatted_topic = ' '.join(word.capitalize() for word in topic.split())
+        logger.debug(f"Formatted topic for Wikipedia: {formatted_topic}")
         wiki_result = {
             'title': f'Wikipedia: {formatted_topic}',
             'link': f'https://en.wikipedia.org/wiki/{requests.utils.quote(formatted_topic.replace(" ", "_"))}',
@@ -288,11 +302,13 @@ def search_topic():
                 # First try direct Wikipedia API to get the exact article URL
                 # Use proper search API to find the most relevant article for the topic
                 search_api_url = f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={requests.utils.quote(topic)}&format=json&srlimit=1"
+                logger.debug(f"Fetching Wikipedia search API: {search_api_url}")
                 search_response = requests.get(search_api_url, timeout=5)
                 
                 if search_response.status_code == 200:
                     search_data = search_response.json()
                     search_results = search_data.get('query', {}).get('search', [])
+                    logger.debug(f"Wikipedia search results count: {len(search_results)}")
                     
                     if search_results:
                         # Get the exact page title from search results
@@ -327,7 +343,7 @@ def search_topic():
                                         'icon': 'bi-book-fill',
                                         'color': '#3498db'
                                     }
-                                    print(f"Found exact Wikipedia article: {exact_wiki_url}")
+                                    logger.debug(f"Found exact Wikipedia article: {exact_wiki_url}")
                                     return  # We found the exact article, no need for Google search
                 
                 # If we reach here, the search API didn't find a good match, try the original method
@@ -368,30 +384,31 @@ def search_topic():
                 }
                 
                 # Add more robust error handling and logging
-                print(f"Attempting to fetch URL: {wiki_query}")
+                logger.debug(f"Attempting to fetch URL: {wiki_query}")
                 try:
                     response = requests.get(wiki_query, headers=headers, timeout=15, verify=False)
                     response.raise_for_status()
+                    logger.debug(f"Successfully fetched URL: {wiki_query}, status: {response.status_code}")
                 except requests.exceptions.SSLError as ssl_err:
-                    print(f"SSL Error, retrying without verification: {ssl_err}")
+                    logger.warning(f"SSL Error, retrying without verification: {ssl_err}")
                     response = requests.get(wiki_query, headers=headers, timeout=15, verify=False)
                     response.raise_for_status()
                 except requests.exceptions.RequestException as e:
-                    print(f"Error fetching URL: {e}")
+                    logger.error(f"Error fetching URL: {e}")
                     
                     # Try one more time with a different User-Agent
                     try:
                         alt_headers = {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299'
                         }
-                        print("Retrying with alternative User-Agent")
+                        logger.debug("Retrying with alternative User-Agent")
                         response = requests.get(wiki_query, headers=alt_headers, timeout=15, verify=False)
                         response.raise_for_status()
                     except requests.exceptions.RequestException as retry_err:
-                        print(f"Error on retry: {retry_err}")
+                        logger.error(f"Error on retry: {retry_err}")
                         return jsonify({'error': 'Failed to fetch URL content after multiple attempts', 'details': str(e)}), 400
             except Exception as e:
-                app.logger.error(f"Error finding Wikipedia article: {str(e)}")
+                logger.error(f"Error finding Wikipedia article: {str(e)}", exc_info=True)
                 # Keep the default wiki result
         
         def get_youtube_result():
@@ -408,27 +425,28 @@ def search_topic():
                 }
                 
                 # Add more robust error handling and logging
-                print(f"Attempting to fetch URL: {youtube_query}")
+                logger.debug(f"Attempting to fetch URL: {youtube_query}")
                 try:
                     response = requests.get(youtube_query, headers=headers, timeout=15, verify=False)
                     response.raise_for_status()
+                    logger.debug(f"Successfully fetched URL: {youtube_query}, status: {response.status_code}")
                 except requests.exceptions.SSLError as ssl_err:
-                    print(f"SSL Error, retrying without verification: {ssl_err}")
+                    logger.warning(f"SSL Error, retrying without verification: {ssl_err}")
                     response = requests.get(youtube_query, headers=headers, timeout=15, verify=False)
                     response.raise_for_status()
                 except requests.exceptions.RequestException as e:
-                    print(f"Error fetching URL: {e}")
+                    logger.error(f"Error fetching URL: {e}")
                     
                     # Try one more time with a different User-Agent
                     try:
                         alt_headers = {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299'
                         }
-                        print("Retrying with alternative User-Agent")
+                        logger.debug("Retrying with alternative User-Agent")
                         response = requests.get(youtube_query, headers=alt_headers, timeout=15, verify=False)
                         response.raise_for_status()
                     except requests.exceptions.RequestException as retry_err:
-                        print(f"Error on retry: {retry_err}")
+                        logger.error(f"Error on retry: {retry_err}")
                         return jsonify({'error': 'Failed to fetch URL content after multiple attempts', 'details': str(e)}), 400
                 
                 if response.status_code == 200:
@@ -460,7 +478,7 @@ def search_topic():
                                 'color': '#e74c3c'
                             }
             except Exception as e:
-                app.logger.error(f"Error finding YouTube video: {str(e)}")
+                logger.error(f"Error finding YouTube video: {str(e)}", exc_info=True)
                 # Keep the default youtube result
         
         # Start both threads
@@ -478,9 +496,10 @@ def search_topic():
         results.append(wiki_result)
         results.append(youtube_result)
         
+        logger.debug(f"Search completed for topic: {topic}, returning {len(results)} results")
         return jsonify({'results': results})
     except Exception as e:
-        app.logger.error(f"Search error: {str(e)}")
+        logger.error(f"Search error: {str(e)}", exc_info=True)
         return jsonify({
             'error': f"Search failed: {str(e)}",
             'results': [
@@ -511,132 +530,100 @@ def process_url():
         data = request.json
         url = data.get('url')
         target_language = data.get('language', 'en')
+        
+        logger.debug(f"Process request received for URL: {url}, language: {target_language}")
 
         if not url:
+            logger.warning("No URL provided in process request")
             return jsonify({'error': 'No URL provided'}), 400
 
         # Validate URL format
         if not url.startswith(('http://', 'https://')):
             url = 'https://' + url
+            logger.debug(f"URL format corrected to: {url}")
 
         # Check cache first
         if REDIS_AVAILABLE:
             cache_key = generate_cache_key('process', {'url': url, 'language': target_language})
-            cached_result = redis_client.get(cache_key)
-            if cached_result:
-                print(f"Using cached result for URL: {url}")
-                
-                # Always regenerate audio data even for cached results
-                # This ensures fresh audio for each request
-                if target_language in ['en', 'hi', 'kn']:
-                    text_for_audio = pickle.loads(cached_result).get('translated_summary') if target_language != 'en' and pickle.loads(cached_result).get('translated_summary') else pickle.loads(cached_result).get('summary')
-                    if text_for_audio:
-                        pickle.loads(cached_result)['audio'] = generate_audio_google_tts(text_for_audio, target_language)
-                
-                # Add cache hit indicator and processing time 
-                pickle.loads(cached_result)['cache_hit'] = True
-                pickle.loads(cached_result)['processing_time'] = 0  # No processing time for cache hits
-                return jsonify(pickle.loads(cached_result))
+            logger.debug(f"Checking cache with key: {cache_key}")
+            
+            try:
+                cached_result = redis_client.get(cache_key)
+                if cached_result:
+                    logger.info(f"Cache hit for URL: {url}, language: {target_language}")
+                    
+                    # Always regenerate audio data even for cached results
+                    # This ensures fresh audio for each request
+                    if target_language in ['en', 'hi', 'kn']:
+                        text_for_audio = pickle.loads(cached_result).get('translated_summary') if target_language != 'en' and pickle.loads(cached_result).get('translated_summary') else pickle.loads(cached_result).get('summary')
+                        if text_for_audio:
+                            pickle.loads(cached_result)['audio'] = generate_audio_google_tts(text_for_audio, target_language)
+                    
+                    # Add cache hit indicator and processing time 
+                    pickle.loads(cached_result)['cache_hit'] = True
+                    pickle.loads(cached_result)['processing_time'] = 0  # No processing time for cache hits
+                    return jsonify(pickle.loads(cached_result))
+            except Exception as cache_error:
+                logger.error(f"Error retrieving from cache: {str(cache_error)}", exc_info=True)
+                # Continue with normal processing if cache retrieval fails
         
-        print(f"Processing URL: {url}")
+        logger.info(f"Processing URL: {url}")
         
         try:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-                'Cache-Control': 'max-age=0'
-            }
+            # Extract content from the URL
+            logger.debug(f"Attempting to extract content using newspaper3k from: {url}")
+            article_content = extract_content_with_newspaper(url)
             
-            # Add more robust error handling and logging
-            print(f"Attempting to fetch URL: {url}")
-            try:
-                response = requests.get(url, headers=headers, timeout=15, verify=False)
+            if not article_content or len(article_content.strip()) < 100:
+                logger.debug("newspaper3k extraction yielded insufficient content, trying fallback method")
+                # Fallback to our custom extraction method
+                response = requests.get(url, headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }, verify=False)
                 response.raise_for_status()
-            except requests.exceptions.SSLError as ssl_err:
-                print(f"SSL Error, retrying without verification: {ssl_err}")
-                response = requests.get(url, headers=headers, timeout=15, verify=False)
-                response.raise_for_status()
-            except requests.exceptions.RequestException as e:
-                print(f"Error fetching URL: {e}")
                 
-                # Try one more time with a different User-Agent
-                try:
-                    alt_headers = {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299'
-                    }
-                    print("Retrying with alternative User-Agent")
-                    response = requests.get(url, headers=alt_headers, timeout=15, verify=False)
-                    response.raise_for_status()
-                except requests.exceptions.RequestException as retry_err:
-                    print(f"Error on retry: {retry_err}")
-                    return jsonify({'error': 'Failed to fetch URL content after multiple attempts', 'details': str(e)}), 400
-
-            # Get the page title and handle potential encoding issues
-            try:
-                html_content = response.text
-                soup = BeautifulSoup(html_content, 'html.parser')
+                # Parse HTML content
+                soup = BeautifulSoup(response.text, 'html.parser')
+                article_content = extract_main_content(soup)
                 title = soup.title.string if soup.title else "No title found"
-                print(f"Successfully extracted title: {title}")
-                
-                # Extract main content with better fallback mechanisms
-                main_content = extract_main_content(soup)
-                
-                if not main_content or len(main_content) < 100:
-                    print("Primary content extraction failed, trying alternative methods")
-                    
-                    # Try to get content from article or main tags
-                    article_content = ""
-                    for article in soup.find_all(['article', 'main', 'div.content', 'div.article']):
-                        article_content += article.get_text(separator=' ', strip=True) + "\n\n"
-                    
-                    if article_content and len(article_content) > 200:
-                        print("Using article/main content")
-                        main_content = article_content
-                    else:
-                        # Try to get all paragraph text
-                        print("Using all paragraph content")
-                        paragraphs = soup.find_all('p')
-                        main_content = "\n".join([p.get_text(separator=' ', strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 50])
-                    
-                    # Last resort: use body text
-                    if not main_content or len(main_content) < 200:
-                        print("Using body content as last resort")
-                        body = soup.find('body')
-                        if body:
-                            main_content = body.get_text(separator=' ', strip=True)
-                
-                print(f"Content extraction complete. Length: {len(main_content)} characters")
-                
-                # Clean the text
-                cleaned_content = clean_text(main_content)
-                
-                # Ensure we have enough content to summarize
-                if not cleaned_content or len(cleaned_content) < 200:
-                    return jsonify({'error': 'Not enough content to summarize from this URL'}), 400
-            except Exception as content_err:
-                print(f"Error extracting content: {content_err}")
-                return jsonify({'error': 'Failed to extract content from URL', 'details': str(content_err)}), 400
+            else:
+                # If using newspaper3k, we need to get the title separately
+                try:
+                    response = requests.get(url, headers={
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }, verify=False)
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    title = soup.title.string if soup.title else "No title found"
+                except:
+                    title = "No title found"
+            
+            logger.debug(f"Content extraction successful, content length: {len(article_content)}")
+            
+            # Clean the text
+            cleaned_content = clean_text(article_content)
+            
+            # Ensure we have enough content to summarize
+            if not cleaned_content or len(cleaned_content) < 200:
+                logger.warning(f"Not enough content to summarize from URL: {url}")
+                return jsonify({'error': 'Not enough content to summarize from this URL'}), 400
             
             # Try the enhanced LLM-based summarization approach first
             try:
                 from enhanced_summarization import integrated_summarize
                 from key_functions import summarize_text, extract_key_sentences
-                print("Attempting enhanced LLM-based summarization...")
+                logger.debug("Attempting enhanced LLM-based summarization...")
                 summary = integrated_summarize(url, cleaned_content, post_process_summary, extract_key_sentences)
                 
                 if not summary:
-                    print("Enhanced summarization failed, falling back to traditional methods")
+                    logger.debug("Enhanced summarization failed, falling back to traditional methods")
                     summary = summarize_text(url, cleaned_content, post_process_summary)
             except Exception as e:
-                print(f"Error using enhanced summarization: {e}, falling back to original method")
+                logger.error(f"Error using enhanced summarization: {e}, falling back to original method")
                 # Use the original summarization method
                 summary = summarize_text(url, cleaned_content, post_process_summary)
             
             if not summary or len(summary) < 50:
-                print("Summary generation failed, using extracted content")
+                logger.debug("Summary generation failed, using extracted content")
                 # Fallback to just the extracted content or a portion of it
                 summary = cleaned_content[:500] + "..."
             
@@ -715,20 +702,20 @@ def process_url():
                         86400,  # 24 hours in seconds
                         pickle.dumps(cache_result)
                     )
-                    print(f"Cached result for URL: {url}")
+                    logger.info(f"Cached result for URL: {url}")
                 except Exception as e:
-                    print(f"Error caching result: {e}")
+                    logger.error(f"Error caching result: {e}")
                     traceback.print_exc()  # Print the full stack trace for debugging
             
             return jsonify(result)
             
         except Exception as e:
-            print(f"Error processing URL: {e}")
+            logger.error(f"Error processing URL: {e}")
             traceback.print_exc()
             return jsonify({'error': 'Failed to process URL', 'details': str(e)}), 500
     
     except Exception as e:
-        print(f"Error in process_url: {e}")
+        logger.error(f"Error in process_url: {e}")
         traceback.print_exc()
         return jsonify({'error': 'Failed to process URL request', 'details': str(e)}), 500
 
@@ -740,7 +727,7 @@ def translate_text(text, target_language):
             cache_key = generate_cache_key('translate', {'text': text, 'lang': target_language})
             cached_result = redis_client.get(cache_key)
             if cached_result:
-                print(f"Using cached translation for language: {target_language}")
+                logger.info(f"Using cached translation for language: {target_language}")
                 return pickle.loads(cached_result)
         
         # Existing translation code
@@ -771,11 +758,11 @@ def translate_text(text, target_language):
         if REDIS_AVAILABLE and translated_text:
             # Cache translations for 7 days (604800 seconds)
             redis_client.setex(cache_key, 604800, pickle.dumps(translated_text))
-            print(f"Cached translation for language: {target_language}")
+            logger.info(f"Cached translation for language: {target_language}")
         
         return translated_text
     except Exception as e:
-        print(f"Translation API error: {e}")
+        logger.error(f"Translation API error: {e}")
         traceback.print_exc()
         return None
 
@@ -786,19 +773,19 @@ def extract_main_content(soup):
         main_content = soup.find(['main', 'article', 'div', 'section'], class_=lambda c: c and any(x in str(c).lower() for x in ['content', 'article', 'main', 'body', 'text']))
         
         if not main_content:
-            print("No main content container found, using entire document")
+            logger.debug("No main content container found, using entire document")
             main_content = soup
         
         # Extract paragraphs and headings
         paragraphs = main_content.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
-        print(f"Found {len(paragraphs)} paragraphs and headings")
+        logger.debug(f"Found {len(paragraphs)} paragraphs and headings")
         
         # Join the text from paragraphs and headings
         text = '\n'.join([p.get_text().strip() for p in paragraphs if p.get_text().strip()])
         
         # If no paragraphs found, get all text
         if not text:
-            print("No paragraph text found, extracting all text")
+            logger.debug("No paragraph text found, extracting all text")
             text = main_content.get_text()
         
         # Clean the text
@@ -807,7 +794,7 @@ def extract_main_content(soup):
         
         return text
     except Exception as e:
-        print(f"Error in extract_main_content: {e}")
+        logger.error(f"Error in extract_main_content: {e}")
         traceback.print_exc()
         # Fallback to getting all text
         return soup.get_text()
@@ -859,7 +846,7 @@ def post_process_summary(text):
         
         return processed_text
     except Exception as e:
-        print(f"Error in post-processing summary: {e}")
+        logger.error(f"Error in post-processing summary: {e}")
         traceback.print_exc()
         return text
 
@@ -900,7 +887,7 @@ def ensure_coherence(text):
         
         return ' '.join(coherent_sentences)
     except Exception as e:
-        print(f"Error ensuring coherence: {e}")
+        logger.error(f"Error ensuring coherence: {e}")
         return text
 
 def generate_audio_google_tts(text, language='en'):
@@ -911,10 +898,10 @@ def generate_audio_google_tts(text, language='en'):
             cache_key = generate_cache_key('audio', {'text': text, 'lang': language})
             cached_result = redis_client.get(cache_key)
             if cached_result:
-                print(f"Using cached audio for language: {language}")
+                logger.info(f"Using cached audio for language: {language}")
                 return pickle.loads(cached_result)
         
-        print(f"Generating audio with Google TTS for language: {language}")
+        logger.info(f"Generating audio with Google TTS for language: {language}")
         
         # Map language codes to Google TTS language codes
         language_map = {
@@ -1007,12 +994,12 @@ def generate_audio_google_tts(text, language='en'):
         all_chunks = [chunk for chunk in all_chunks if chunk.strip()]
         
         original_chunk_count = len(all_chunks)
-        print(f"Original chunk count: {original_chunk_count}")
+        logger.debug(f"Original chunk count: {original_chunk_count}")
         
         # For non-English languages, we'll process fewer chunks in parallel and use sequential processing
         # to ensure correct ordering and avoid rate limiting
         if language in ['hi', 'kn']:
-            print(f"Using optimized parallel processing for {language} language")
+            logger.info(f"Using optimized parallel processing for {language} language")
             
             # Function to download a single chunk with timeout - optimized for non-English
             def download_chunk_non_english(chunk_idx, chunk_text):
@@ -1040,7 +1027,7 @@ def generate_audio_google_tts(text, language='en'):
                     
                     return chunk_idx, response.content
                 except Exception as e:
-                    print(f"Error downloading chunk {chunk_idx}: {e}")
+                    logger.error(f"Error downloading chunk {chunk_idx}: {e}")
                     return chunk_idx, None
             
             # Use parallel processing with ThreadPoolExecutor but with fewer workers
@@ -1077,7 +1064,7 @@ def generate_audio_google_tts(text, language='en'):
                     chunk_idx, content = future.result()
                     if content:
                         chunk_data.append((chunk_idx, content))
-                        print(f"Downloaded chunk {chunk_idx+1}/{len(all_chunks)}")
+                        logger.info(f"Downloaded chunk {chunk_idx+1}/{len(all_chunks)}")
         
         else:
             # For English, use parallel processing with more workers
@@ -1103,7 +1090,7 @@ def generate_audio_google_tts(text, language='en'):
                     response.raise_for_status()
                     return chunk_idx, response.content
                 except Exception as e:
-                    print(f"Error downloading chunk {chunk_idx}: {e}")
+                    logger.error(f"Error downloading chunk {chunk_idx}: {e}")
                     return chunk_idx, None
             
             # Use parallel processing with ThreadPoolExecutor
@@ -1136,7 +1123,7 @@ def generate_audio_google_tts(text, language='en'):
                     chunk_idx, content = future.result()
                     if content:
                         chunk_data.append((chunk_idx, content))
-                        print(f"Downloaded chunk {chunk_idx+1}/{len(all_chunks)}")
+                        logger.info(f"Downloaded chunk {chunk_idx+1}/{len(all_chunks)}")
         
         # Sort chunks by their original index
         chunk_data.sort(key=lambda x: x[0])
@@ -1154,17 +1141,17 @@ def generate_audio_google_tts(text, language='en'):
         try:
             os.unlink(temp_file_path)
         except Exception as e:
-            print(f"Warning: Failed to delete temporary file {temp_file_path}: {e}")
+            logger.warning(f"Warning: Failed to delete temporary file {temp_file_path}: {e}")
         
         # Cache the audio data
         if REDIS_AVAILABLE and audio_data:
             # Cache audio for 7 days (604800 seconds)
             redis_client.setex(cache_key, 604800, pickle.dumps(audio_data))
-            print(f"Cached audio for language: {language}")
+            logger.info(f"Cached audio for language: {language}")
         
         return audio_data
     except Exception as e:
-        print(f"Error generating audio: {e}")
+        logger.error(f"Error generating audio: {e}")
         traceback.print_exc()
         return None
 
@@ -1343,7 +1330,7 @@ def devanagari_braille_conversion(text):
         
         return result
     except Exception as e:
-        print(f"Error in Devanagari braille conversion: {e}")
+        logger.error(f"Error in Devanagari braille conversion: {e}")
         return "Error in braille conversion"
 
 def kannada_braille_conversion(text):
@@ -1534,7 +1521,7 @@ def kannada_braille_conversion(text):
         
         return result
     except Exception as e:
-        print(f"Error in Kannada braille conversion: {e}")
+        logger.error(f"Error in Kannada braille conversion: {e}")
         return "Error in braille conversion"
 
 def simple_braille_conversion(text):
@@ -1768,7 +1755,7 @@ def simple_braille_conversion(text):
         # Join the words with spaces
         return " ".join(result)
     except Exception as e:
-        print(f"Error in English braille conversion: {e}")
+        logger.error(f"Error in English braille conversion: {e}")
         return "Error in braille conversion"
 
 def mixed_language_braille_conversion(text, language):
@@ -1821,7 +1808,7 @@ def mixed_language_braille_conversion(text, language):
             
         return result
     except Exception as e:
-        print(f"Error in mixed language braille conversion: {e}")
+        logger.error(f"Error in mixed language braille conversion: {e}")
         return "Error in braille conversion"
 
 def detect_language(text):
@@ -2049,7 +2036,7 @@ def correct_voice_command():
         corrected_command = scientific_terms[original_command.lower()]
         correction_method = 'dictionary'
         correction_confidence = 0.98
-        print(f"Scientific term corrected: '{original_command}' → '{corrected_command}'")
+        logger.info(f"Scientific term corrected: '{original_command}' → '{corrected_command}'")
         
         # Prepare the response for dictionary-based correction
         result = {
@@ -2115,10 +2102,10 @@ def correct_voice_command():
                 corrected_command = gpt_corrected_command
                 correction_method = 'gpt-4'
                 correction_confidence = 0.95  # High confidence for GPT-4 corrections
-                print(f"GPT-4 corrected: '{original_command}' → '{corrected_command}'")
+                logger.info(f"GPT-4 corrected: '{original_command}' → '{corrected_command}'")
             
         except Exception as e:
-            print(f"GPT-4 correction failed: {e}")
+            logger.error(f"GPT-4 correction failed: {e}")
             # Will fall back to fuzzy matching
     
     # Fuzzy matching fallback
@@ -2192,10 +2179,10 @@ def correct_voice_command():
                 corrected_command = best_match
                 correction_method = 'fuzzy'
                 correction_confidence = best_similarity / 100
-                print(f"Fuzzy matching corrected: '{original_command}' → '{corrected_command}' (Similarity: {best_similarity}%)")
+                logger.info(f"Fuzzy matching corrected: '{original_command}' → '{corrected_command}' (Similarity: {best_similarity}%)")
         
         except Exception as e:
-            print(f"Fuzzy matching fallback failed: {e}")
+            logger.error(f"Fuzzy matching fallback failed: {e}")
     
     # Prepare the response
     result = {
@@ -2214,7 +2201,7 @@ def correct_voice_command():
                 pickle.dumps(result)
             )
         except Exception as e:
-            print(f"Error caching command correction: {e}")
+            logger.error(f"Error caching command correction: {e}")
     
     return jsonify(result)
 
