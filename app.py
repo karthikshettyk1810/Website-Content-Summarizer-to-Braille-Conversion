@@ -7,6 +7,7 @@ import json
 import urllib.parse
 import urllib3
 import logging
+import gc
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from bs4 import BeautifulSoup
@@ -38,6 +39,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Memory optimization settings for deployment
+# These settings help reduce memory usage on platforms like Render
+os.environ['TRANSFORMERS_OFFLINE'] = '1'  # Avoid downloading models during runtime
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'  # Disable parallelism in tokenizers
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Reduce TensorFlow logging
 
 # Load OpenAI API key from environment file
 print("Loading OpenAI API key from openAi.env file...")
@@ -2204,7 +2211,7 @@ def correct_voice_command():
             logger.error(f"Error caching command correction: {e}")
     
     return jsonify(result)
-
+    
 if __name__ == '__main__':
     # Start the cache maintenance thread before running the app
     start_cache_maintenance()
