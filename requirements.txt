@@ -9,7 +9,6 @@ pyttsx3
 spacy
 lxml
 urllib3
-traceback
 bs4
 json
 urllib.parse
