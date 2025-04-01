@@ -6,6 +6,7 @@ import tempfile
 import json
 import urllib.parse
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 from bs4 import BeautifulSoup
 from sumy.parsers.html import HtmlParser
 from sumy.parsers.plaintext import PlaintextParser
@@ -66,6 +67,7 @@ except LookupError:
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all domains
 load_dotenv()
 
 # Redis configuration
