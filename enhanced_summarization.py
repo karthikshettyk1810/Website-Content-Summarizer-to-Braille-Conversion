@@ -7,6 +7,7 @@ import os
 import traceback
 import re
 import nltk
+import gc
 from newspaper import Article
 from transformers import pipeline, AutoModelForSeq2SeqLM, AutoTokenizer
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
@@ -25,6 +26,25 @@ from dotenv import load_dotenv
 # Set up logging for better diagnostics
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('enhanced_summarization')
+
+# Memory optimization for deployment environments
+def optimize_memory_usage():
+    """Apply memory optimization settings for deployment environments"""
+    # Set PyTorch to use CPU if memory is constrained
+    if os.environ.get('RENDER') == 'true' or os.environ.get('LOW_MEMORY') == 'true':
+        logger.info("Running in memory-constrained environment, applying optimizations")
+        # Force CPU usage to reduce memory consumption
+        os.environ['CUDA_VISIBLE_DEVICES'] = ''
+        # Reduce model precision
+        torch.set_default_dtype(torch.float32)
+        # Garbage collect to free memory
+        gc.collect()
+        torch.cuda.empty_cache() if torch.cuda.is_available() else None
+        return True
+    return False
+
+# Apply memory optimizations
+is_memory_optimized = optimize_memory_usage()
 
 # Configure Hugging Face cache directory
 # Create a persistent cache directory in the project folder
@@ -299,40 +319,48 @@ def summarize_with_gpt2(text, max_length=300):
     Updated to generate longer summaries (12-15 lines).
     """
     try:
-        logger.info("Loading GPT-2 model for summarization...")
-        # Load pre-trained model and tokenizer
-        model_name = "gpt2-medium"  # Using medium size for better performance
-        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-        model = GPT2LMHeadModel.from_pretrained(model_name)
+        # Skip this method in memory-constrained environments
+        if is_memory_optimized:
+            logger.info("Skipping GPT-2 summarization due to memory constraints")
+            return None
+            
+        logger.info("Attempting to summarize with GPT-2")
         
-        # Add a summarization prompt to guide the model for longer summaries
-        prompt_text = f"Please provide a comprehensive summary of the following text in 12-15 lines, capturing all important information and key points:\n\n{text}\n\nSummary:"
+        # Load model and tokenizer
+        tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+        model = GPT2LMHeadModel.from_pretrained('gpt2')
         
-        # Tokenize and encode the input text with the prompt
-        inputs = tokenizer(prompt_text, return_tensors="pt", max_length=512, truncation=True)
+        # Set special tokens
+        tokenizer.pad_token = tokenizer.eos_token
         
-        logger.info("Generating summary with GPT-2...")
-        # Generate summary with appropriate parameters for longer summaries
-        outputs = model.generate(
-            inputs['input_ids'], 
-            max_length=max_length, 
-            num_beams=5, 
-            length_penalty=1.0,  # Encourages longer summaries
-            no_repeat_ngram_size=3,  # Prevents repetition
-            early_stopping=True,
-            temperature=0.8  # Slightly higher temperature for more detailed output
+        # Prepare input text
+        input_text = f"Summarize this text: {text[:1000]}..."
+        
+        # Tokenize input
+        inputs = tokenizer.encode(input_text, return_tensors='pt', max_length=1024, truncation=True)
+        
+        # Generate summary
+        summary_ids = model.generate(
+            inputs,
+            max_length=max_length,
+            num_beams=4,
+            no_repeat_ngram_size=2,
+            early_stopping=True
         )
         
-        # Decode the generated summary
-        summary = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        # Decode summary
+        summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
         
-        # Extract only the summary part (after the prompt)
+        # Extract the summary part after the prompt
         if "Summary:" in summary:
             summary = summary.split("Summary:")[1].strip()
         
-        logger.info(f"GPT-2 summary length: {len(summary)} characters")
-        return summary
+        # Clean up memory
+        del model, tokenizer, inputs, summary_ids
+        gc.collect()
+        torch.cuda.empty_cache() if torch.cuda.is_available() else None
         
+        return summary
     except Exception as e:
         logger.error(f"Error in GPT-2 summarization: {e}")
         traceback.print_exc()
@@ -455,66 +483,105 @@ def integrated_summarize(url, text_content, post_process_function=None, extract_
     - Either a successful summary or None to indicate caller should use their existing fallbacks
     """
     try:
-        # First, try enhanced content extraction with newspaper3k
-        enhanced_content = extract_content_with_newspaper(url)
+        logger.info(f"Starting integrated summarization for URL: {url}")
         
-        # If newspaper3k succeeded, use the enhanced content
-        if enhanced_content:
-            text_to_summarize = enhanced_content
-            logger.info("Using enhanced content extraction from newspaper3k")
-        else:
-            # Otherwise fall back to the provided text_content
-            text_to_summarize = text_content
-            logger.info("Using fallback text content for summarization")
-        
-        # 1. First try with Gemini model (Google's state-of-the-art model)
-        logger.info("Attempting Gemini summarization...")
-        try:
-            summary = summarize_with_gemini(text_to_summarize)
-            if summary and len(summary) >= 150:  # Ensure summary is substantial
-                logger.info("Successfully created summary with Gemini")
-                if post_process_function:
-                    summary = post_process_function(summary)
-                return summary
-        except Exception as gemini_e:
-            logger.error(f"Gemini summarization failed: {gemini_e}")
-        
-        # 2. Try with GPT-2 model (alternative offline approach)
-        logger.info("Attempting GPT-2 summarization...")
-        try:
-            summary = summarize_with_gpt2(text_to_summarize)
-            if summary and len(summary) >= 150:  # Ensure summary is substantial
-                logger.info("Successfully created summary with GPT-2")
-                if post_process_function:
-                    summary = post_process_function(summary)
-                return summary
-        except Exception as gpt2_e:
-            logger.error(f"GPT-2 summarization failed: {gpt2_e}")
-        
-        # 3. Try with OpenAI if API key is available
-        logger.info("Attempting OpenAI GPT summarization...")
-        try:
-            summary = summarize_with_gpt(text_to_summarize)
-            if summary and len(summary) >= 150:  # Ensure summary is substantial
-                logger.info("Successfully created summary with OpenAI GPT")
-                if post_process_function:
-                    summary = post_process_function(summary)
-                return summary
-        except Exception as gpt_e:
-            logger.error(f"OpenAI GPT summarization failed: {gpt_e}")
-        
-        # 4. Call the provided fallback functions if available
-        try:
-            if 'key_functions' in sys.modules and 'summarize_text' in dir(sys.modules['key_functions']):
-                from key_functions import summarize_text as fallback_summarize_text
-                logger.info("Using fallback summarize_text function from key_functions module")
-                return fallback_summarize_text(url, text_to_summarize, post_process_function)
-        except Exception as fallback_e:
-            logger.error(f"Error using fallback functions: {fallback_e}")
+        # For memory-constrained environments, prioritize API-based methods over local models
+        if is_memory_optimized:
+            logger.info("Running in memory-optimized mode, prioritizing API-based summarization")
             
-        # If we get here, all methods failed
-        return None
+            # Try Gemini first (API-based)
+            if GEMINI_API_KEY:
+                try:
+                    logger.info("Attempting summarization with Gemini Pro")
+                    summary = summarize_with_gemini(text_content[:10000])  # Limit text length
+                    if summary and len(summary) > 100:
+                        logger.info("Gemini Pro summarization successful")
+                        if post_process_function:
+                            summary = post_process_function(summary)
+                        return summary
+                except Exception as e:
+                    logger.error(f"Gemini Pro summarization failed: {e}")
+            
+            # Try OpenAI next (API-based)
+            if API_KEY:
+                try:
+                    logger.info("Attempting summarization with OpenAI")
+                    summary = summarize_with_gpt(text_content[:6000])  # Limit text length
+                    if summary and len(summary) > 100:
+                        logger.info("OpenAI summarization successful")
+                        if post_process_function:
+                            summary = post_process_function(summary)
+                        return summary
+                except Exception as e:
+                    logger.error(f"OpenAI summarization failed: {e}")
+            
+            # Fall back to key sentences extraction
+            if extract_key_sentences_function:
+                logger.info("Using key sentences extraction as fallback")
+                return extract_key_sentences_function(text_content)
+            
+            return None
         
+        # For environments with sufficient memory, try all methods
+        else:
+            # Try Gemini first (best quality)
+            if GEMINI_API_KEY:
+                try:
+                    logger.info("Attempting summarization with Gemini Pro 1.5")
+                    summary = summarize_with_gemini(text_content)
+                    if summary and len(summary) > 100:
+                        logger.info("Gemini Pro 1.5 summarization successful")
+                        if post_process_function:
+                            summary = post_process_function(summary)
+                        return summary
+                except Exception as e:
+                    logger.error(f"Gemini Pro 1.5 summarization failed: {e}")
+                    
+                    # Try Gemini Pro as fallback
+                    try:
+                        logger.info("Falling back to Gemini Pro")
+                        summary = summarize_with_gemini_pro(text_content)
+                        if summary and len(summary) > 100:
+                            logger.info("Gemini Pro summarization successful")
+                            if post_process_function:
+                                summary = post_process_function(summary)
+                            return summary
+                    except Exception as gemini_pro_error:
+                        logger.error(f"Gemini Pro summarization failed: {gemini_pro_error}")
+            
+            # Try GPT-2 (offline model)
+            try:
+                logger.info("Attempting summarization with GPT-2")
+                summary = summarize_with_gpt2(text_content)
+                if summary and len(summary) > 100:
+                    logger.info("GPT-2 summarization successful")
+                    if post_process_function:
+                        summary = post_process_function(summary)
+                    return summary
+            except Exception as e:
+                logger.error(f"GPT-2 summarization failed: {e}")
+            
+            # Try OpenAI if API key is available
+            if API_KEY:
+                try:
+                    logger.info("Attempting summarization with OpenAI")
+                    summary = summarize_with_gpt(text_content)
+                    if summary and len(summary) > 100:
+                        logger.info("OpenAI summarization successful")
+                        if post_process_function:
+                            summary = post_process_function(summary)
+                        return summary
+                except Exception as e:
+                    logger.error(f"OpenAI summarization failed: {e}")
+            
+            # Fall back to key sentences extraction
+            if extract_key_sentences_function:
+                logger.info("Using key sentences extraction as fallback")
+                return extract_key_sentences_function(text_content)
+        
+        # If all methods fail, return None to let the caller use their fallback methods
+        return None
+    
     except Exception as e:
         logger.error(f"Error in integrated summarization: {e}")
         traceback.print_exc()
