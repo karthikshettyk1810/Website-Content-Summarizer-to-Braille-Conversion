@@ -11,3 +11,4 @@ transformers
 pydub
 newspaper3k
 gunicorn
+sumy
