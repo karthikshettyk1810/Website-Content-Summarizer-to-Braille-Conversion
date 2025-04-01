@@ -1,0 +1,3180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Website Content Summarizer</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css"
+    />
+    <style>
+      :root {
+        --primary-color: #6c63ff;
+        --primary-dark: #5a52d5;
+        --secondary-color: #4facfe;
+        --accent-color: #7b68ee;
+        --text-color: #333;
+        --light-text: #666;
+        --background-color: #f8f9fa;
+        --card-bg: #ffffff;
+        --card-border: rgba(0, 0, 0, 0.125);
+        --card-accent: #00f2fe;
+        --card-accent-rgb: 0, 242, 254;
+        --error-color: #dc3545;
+        --success-color: #28a745;
+        --braille-text-color: #000;
+        --braille-bg-color: #f8f8f8;
+      }
+
+      body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        line-height: 1.6;
+        position: relative;
+        margin-bottom: 60px;
+        min-height: 100vh;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+
+      h1 {
+        color: var(--primary-color);
+        margin-bottom: 2rem;
+        font-weight: 700;
+        text-align: center;
+        position: relative;
+        padding-bottom: 15px;
+      }
+
+      h1:after {
+        content: '';
+        position: absolute;
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        border-radius: 2px;
+      }
+
+      .card {
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: var(--card-bg);
+        height: 100%;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        font-weight: 600;
+        border-bottom: none;
+        padding: 15px 20px;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        padding: 8px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 99, 255, 0.2);
+      }
+
+      .btn-outline-primary {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+
+      .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      /* Form styles */
+      .form-control {
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+      }
+
+      .form-select {
+        border-radius: 8px;
+        padding: 10px 15px;
+      }
+
+      /* Loading spinner */
+      #loading-spinner {
+        padding: 30px 0;
+      }
+
+      .spinner {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto;
+        position: relative;
+        animation: pulse 1.5s infinite ease-in-out;
+      }
+
+      .infinity-symbol {
+        font-size: 40px;
+        color: var(--primary-color);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(0.95); opacity: 0.7; }
+        50% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(0.95); opacity: 0.7; }
+      }
+
+      /* Error message */
+      #error-message {
+        color: var(--error-color);
+        background-color: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.2);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      /* Results container */
+      #result-container {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .result-title {
+        color: var(--primary-color);
+        margin-bottom: 15px;
+        border-bottom: 2px solid rgba(108, 99, 255, 0.2);
+        padding-bottom: 10px;
+      }
+
+      /* Braille text */
+      .braille-container {
+        font-family: monospace;
+        background-color: var(--braille-bg-color);
+        border-radius: 8px;
+        padding: 15px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .braille-container::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .braille-container::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 8px;
+      }
+
+      .braille-container::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 8px;
+      }
+
+      .braille-text {
+        line-height: 1.8;
+        font-size: 18px;
+        color: var(--braille-text-color);
+        white-space: pre-wrap;
+        padding-right: 5px;
+        flex-grow: 1;
+        height: 100%;
+        resize: none;
+        border: none;
+        background-color: transparent;
+        width: 100%;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary-color) #f0f0f0;
+        font-family: monospace;
+      }
+      
+      .braille-text:focus {
+        outline: none;
+        box-shadow: none;
+      }
+      
+      .braille-text::-webkit-scrollbar {
+        width: 8px;
+      }
+      
+      .braille-text::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 8px;
+      }
+      
+      .braille-text::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 8px;
+      }
+
+      /* Voice assistant UI */
+      .wake-word-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      .wake-word-btn:before {
+        content: "";
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z'/%3E%3Cpath d='M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .wake-word-btn.listening {
+        animation: pulsate 2s infinite;
+      }
+
+      @keyframes pulsate {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.5); }
+        70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(108, 99, 255, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(108, 99, 255, 0); }
+      }
+
+      .voice-status {
+        position: fixed;
+        bottom: 30px;
+        right: 100px;
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 30px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        font-size: 14px;
+        color: var(--text-color);
+        display: none;
+        z-index: 999;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+      }
+
+      .voice-status.show {
+        display: flex;
+        align-items: center;
+        animation: slideIn 0.3s forwards;
+      }
+
+      .voice-status.wake-word {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+      }
+
+      .voice-status.active-listening {
+        background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        animation: pulsateStatus 1.5s infinite;
+      }
+
+      .voice-status.error {
+        background: linear-gradient(135deg, var(--error-color) 0%, #ff6b6b 100%);
+        color: white;
+      }
+
+      @keyframes pulsateStatus {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+
+      @keyframes slideIn {
+        from { transform: translateX(20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+
+      .command-correction {
+        position: fixed;
+        bottom: 70px;
+        right: 100px;
+        background-color: rgba(40, 167, 69, 0.9);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        display: none;
+        max-width: 300px;
+      }
+
+      .command-correction.show {
+        opacity: 1;
+        transform: translateY(0);
+        display: block;
+        animation: slideIn 0.3s forwards;
+      }
+
+      .command-correction.gpt-4 {
+        background-color: rgba(13, 110, 253, 0.9);
+      }
+
+      .command-correction.fuzzy {
+        background-color: rgba(255, 193, 7, 0.9);
+        color: #333;
+      }
+      
+      .command-correction.dictionary {
+        background-color: rgba(111, 66, 193, 0.9);
+        color: white;
+      }
+
+      /* Copy success message */
+      .copy-success {
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        padding: 10px 20px;
+        background: var(--success-color);
+        color: white;
+        border-radius: 8px;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .copy-success.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Highlight form animation */
+      .highlight-form {
+        animation: highlightBorder 2s ease;
+      }
+
+      @keyframes highlightBorder {
+        0% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.5); }
+        50% { box-shadow: 0 0 0 10px rgba(108, 99, 255, 0.2); }
+        100% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0); }
+      }
+
+      /* Tech circuit background */
+      .tech-circuit {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-.895-3-2-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-.895-3-2-3-3 1.343-3 3 1.343 3 3 3zM34 90c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5%M32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2%M60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2%M35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2%M12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%236c63ff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+        background-size: 200px;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.5;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .voice-status {
+          right: 85px;
+          max-width: 200px;
+          font-size: 12px;
+        }
+        
+        .wake-word-btn {
+          width: 50px;
+          height: 50px;
+        }
+        
+        .card-header {
+          font-size: 14px;
+        }
+        
+        .btn-group .btn {
+          padding: 4px 8px;
+          font-size: 12px;
+        }
+        
+        h1 {
+          font-size: 1.5rem;
+        }
+      }
+
+      /* Highlight input field */
+      .highlight-input {
+        background-color: rgba(108, 99, 255, 0.1) !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25) !important;
+        transition: all 0.3s ease;
+        animation: pulse 2s ease-in-out;
+      }
+      
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.02);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      
+      /* Special result styling */
+      .special-result {
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .special-result:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      }
+      
+      .wikipedia-result {
+        border-top: 5px solid #3498db;
+      }
+      
+      .youtube-result {
+        border-top: 5px solid #e74c3c;
+      }
+      
+      .source-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        margin-right: 10px;
+        font-size: 16px;
+        color: white;
+      }
+      
+      .source-badge.wikipedia {
+        background-color: #3498db;
+      }
+      
+      .source-badge.youtube {
+        background-color: #e74c3c;
+      }
+      
+      .result-card-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .result-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+      }
+      
+      .result-snippet {
+        color: #666;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+      }
+      
+      .result-link {
+        font-size: 0.85rem;
+        color: #888;
+        margin-bottom: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .result-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: auto;
+      }
+      
+      .result-actions .btn {
+        border-radius: 20px;
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .search-results-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      
+      .search-result-col {
+        flex: 1;
+      }
+      
+      @media (max-width: 768px) {
+        .search-results-row {
+          flex-direction: column;
+        }
+      }
+      
+      /* YouTube play button */
+      .play-youtube-btn {
+        border-radius: 25px;
+        padding: 0.5rem 1.5rem !important;
+        font-size: 1.1rem;
+        background-color: #FF0000; /* YouTube red */
+        border-color: #FF0000;
+        color: white;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 2px 6px rgba(255, 0, 0, 0.3);
+        width: 100%;
+        margin-top: 1rem;
+      }
+      
+      .play-youtube-btn:hover {
+        background-color: #CC0000;
+        border-color: #CC0000;
+        box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+        transform: translateY(-2px);
+      }
+      
+      .play-youtube-btn:active {
+        transform: translateY(0);
+      }
+      
+      .play-youtube-btn i {
+        font-size: 1.2rem;
+      }
+      
+      /* Audio controls */
+      .summary-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      
+      .control-btn {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .audio-time-display {
+        font-size: 0.9rem;
+        color: #666;
+        margin-left: 10px;
+      }
+      
+      /* Action buttons styling */
+      .btn-action {
+        padding: 0.4rem 0.7rem;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-left: 5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+
+      .btn-action i {
+        font-size: 1rem;
+      }
+
+      .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(108, 99, 255, 0.2);
+      }
+
+      .btn-action.copy-btn {
+        background-color: #8075FF;
+        border-color: #8075FF;
+        color: white;
+      }
+
+      .btn-action.copy-btn:hover {
+        background-color: #6c63ff;
+        border-color: #6c63ff;
+      }
+
+      .btn-action.txt-btn {
+        background-color: #4facfe;
+        border-color: #4facfe;
+        color: white;
+      }
+      
+      .btn-action.txt-btn:hover {
+        background-color: #45a0f5;
+        border-color: #45a0f5;
+      }
+
+      .btn-action.doc-btn {
+        background-color: #3a86ff;
+        border-color: #3a86ff;
+        color: white;
+      }
+      
+      .btn-action.doc-btn:hover {
+        background-color: #2e7bf4;
+        border-color: #2e7bf4;
+      }
+      
+      /* Equal height cards */
+      #summary-card, 
+      #braille-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .row.equal-height {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      
+      .row.equal-height > [class*='col-'] {
+        display: flex;
+        flex-direction: column;
+      }
+      
+      #summary-card .card-body,
+      #braille-card .card-body {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        overflow: hidden;
+        position: relative;
+      }
+
+      #result-summary {
+        flex-grow: 1;
+        overflow-y: auto;
+        margin-bottom: 15px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary-color) #f0f0f0;
+        min-height: 300px;
+      }
+      
+      #result-summary::-webkit-scrollbar {
+        width: 8px;
+      }
+      
+      #result-summary::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 8px;
+      }
+      
+      #result-summary::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 8px;
+      }
+
+      /* Animation for language selection highlight */
+      @keyframes highlightPulse {
+        0% { box-shadow: 0 0 0 0 rgba(111, 66, 193, 0.7); }
+        50% { box-shadow: 0 0 0 10px rgba(111, 66, 193, 0.4); }
+        100% { box-shadow: 0 0 0 0 rgba(111, 66, 193, 0); }
+      }
+      
+      .highlight-selection {
+        animation: highlightPulse 1s ease-out;
+        border-color: var(--primary-color) !important;
+        background-color: rgba(111, 66, 193, 0.1) !important;
+        transition: all 0.3s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tech-circuit"></div>
+    <div class="container">
+      <h1>Website Content Summarizer to Braille Conversion</h1>
+      
+      <!-- Search Form -->
+      <div class="card mb-4">
+        <div class="card-header">Search</div>
+        <div class="card-body">
+          <form id="search-form">
+            <div class="input-group mb-3">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search for websites..."
+                id="search-query"
+                name="query"
+                required
+              />
+              <button class="btn btn-primary" type="submit">
+                <i class="bi bi-search"></i> Search
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Search Results -->
+      <div id="search-results" class="container mt-4 mb-4 animate__animated animate__fadeIn" style="display: none;">
+        <div class="card shadow-sm">
+          <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h4 class="mb-0" id="results-count">Search Results</h4>
+            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('search-results').style.display = 'none';">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <!-- Loading spinner for search -->
+            <div id="search-loading-spinner" class="text-center p-5" style="display: none;">
+              <div class="d-flex flex-column align-items-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted">Searching... Please wait</p>
+              </div>
+            </div>
+            <div id="results-container" class="p-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Input Form -->
+      <div class="card mb-4">
+        <div class="card-header">Enter URL</div>
+        <div class="card-body">
+          <form id="url-form">
+            <div class="mb-3">
+              <label for="url" class="form-label">Website URL</label>
+              <input
+                type="url"
+                class="form-control"
+                id="url"
+                name="url"
+                placeholder="https://example.com"
+                required
+              />
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label for="language" class="form-label">Language</label>
+                <select class="form-select" id="language" name="language">
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
+                  <option value="kn">Kannada</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-translate"></i> Convert to Braille
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div id="loading-spinner" style="display: none;">
+        <div class="spinner">
+          <div class="infinity-symbol">∞</div>
+        </div>
+        <p class="text-center mt-3">Processing your request...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div id="error-message" style="display: none;"></div>
+
+      <!-- Results Container -->
+      <div id="result-container" style="display: none;">
+        <div class="row equal-height">
+          <!-- Summary Card -->
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100" id="summary-card">
+              <div class="card-header">
+                <span>Summary</span>
+                <div class="float-end">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-action copy-btn copy-summary-btn">
+                      <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                    <button class="btn btn-action txt-btn" id="download-summary-txt">
+                      <i class="bi bi-file-earmark-text"></i> .TXT
+                    </button>
+                    <button class="btn btn-action doc-btn" id="download-summary-doc">
+                      <i class="bi bi-file-earmark-word"></i> .DOC
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <h4 id="result-title" class="result-title"></h4>
+                <div id="result-summary"></div>
+                <div class="summary-controls">
+                  <button id="play-summary" class="btn btn-sm btn-primary control-btn" title="Play Summary">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                  <button id="pause-summary" class="btn btn-sm btn-primary control-btn" style="display: none;" title="Pause Summary">
+                    <i class="bi bi-pause-fill"></i>
+                  </button>
+                  <button id="skip-backward" class="btn btn-sm btn-primary control-btn" title="Skip Backward 10 Seconds">
+                    <i class="bi bi-skip-backward-fill"></i>
+                  </button>
+                  <button id="skip-forward" class="btn btn-sm btn-primary control-btn" title="Skip Forward 10 Seconds">
+                    <i class="bi bi-skip-forward-fill"></i>
+                  </button>
+                  <span id="audio-time" class="audio-time-display" style="display: none;">0:00 / 0:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Braille Card -->
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100" id="braille-card">
+              <div class="card-header">
+                <span>Braille Output</span>
+                <div class="float-end">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-action copy-btn copy-braille-btn">
+                      <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                    <button class="btn btn-action txt-btn" id="download-braille-txt">
+                      <i class="bi bi-file-earmark-text"></i> .TXT
+                    </button>
+                    <button class="btn btn-action doc-btn" id="download-braille-doc">
+                      <i class="bi bi-file-earmark-word"></i> .DOC
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="braille-container">
+                  <textarea id="braille-output" class="braille-text" readonly></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Voice Assistant Button -->
+    <div class="wake-word-btn" id="voice-button"></div>
+    <div class="voice-status" id="voice-status">Listening for "Hey Saara"</div>
+    <div class="command-correction" id="command-correction"></div>
+    <div class="copy-success">Copied to clipboard!</div>
+    
+    <script>
+      // Download functionality
+      function downloadText(text, filename) {
+        const blob = new Blob([text], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function downloadWord(text, filename) {
+        const preHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Export HTML to Word Document with JavaScript</title></head><body>';
+        const postHtml = "</body></html>";
+        const html = preHtml + text.replace(/\n/g, "<br>") + postHtml;
+        
+        const blob = new Blob([html], { type: "application/msword" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // Function to show copy success message
+      function showCopySuccess() {
+        const copySuccess = document.querySelector(".copy-success");
+        copySuccess.classList.add("show");
+        setTimeout(() => {
+          copySuccess.classList.remove("show");
+        }, 2000);
+      }
+
+      // Process URL form submission
+      document.getElementById("url-form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const url = document.getElementById("url").value;
+          const language = document.getElementById("language").value;
+
+          if (!url) {
+            const errorMessage = document.getElementById("error-message");
+            errorMessage.textContent = "Please enter a valid URL.";
+            errorMessage.style.display = "block";
+            return;
+          }
+
+          // Pause voice recognition during URL processing
+          if (typeof recognition !== 'undefined' && isListening) {
+            pauseListening();
+          }
+          
+          // Hide error message if it was previously shown
+          document.getElementById("error-message").style.display = "none";
+          
+          // Show loading spinner
+          document.getElementById("loading-spinner").style.display = "block";
+          
+          // Hide results if they were previously shown
+          document.getElementById("result-container").style.display = "none";
+          
+          // Reset audio state for new content
+          resetAudioState();
+          
+          try {
+            const response = await fetch('/process', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ 
+                url: url, 
+                language: language
+              })
+            });
+            
+            // Check if we got JSON or HTML
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+              if (response.ok) {
+                const data = await response.json();
+                
+                // Hide loading spinner
+                document.getElementById("loading-spinner").style.display = "none";
+                
+                // Show results
+                document.getElementById("result-container").style.display = "block";
+                
+                // Display title
+                document.getElementById("result-title").textContent = data.title || "No title found";
+                
+                // Display summary
+                const summaryOutput = document.getElementById("result-summary");
+                summaryOutput.innerHTML = "";
+                
+                // Use translated summary if available and language is not English
+                const summaryContent = (data.translated_summary && language !== 'en') 
+                  ? data.translated_summary 
+                  : data.summary;
+                
+                if (summaryContent) {
+                  const paragraphs = summaryContent.split('\n\n');
+                  paragraphs.forEach(paragraph => {
+                    if (paragraph.trim()) {
+                      const p = document.createElement('p');
+                      p.textContent = paragraph;
+                      summaryOutput.appendChild(p);
+                    }
+                  });
+                } else {
+                  summaryOutput.textContent = "No summary available.";
+                }
+                
+                // Store selected language and audio data globally for TTS
+                window.currentLanguage = language;
+                window.audioData = data.audio;
+                
+                // Display braille
+                const brailleOutput = document.getElementById("braille-output");
+                if (data.braille) {
+                  brailleOutput.textContent = data.braille;
+                } else {
+                  brailleOutput.textContent = "No braille available.";
+                }
+                
+                // Provide audio feedback for successful processing
+                provideAudioFeedback("Summary generated successfully");
+                
+                // Restart voice recognition after successful processing
+                setTimeout(() => {
+                  if (!isListening) {
+                    console.log("Restarting recognition after URL processing");
+                    startListening();
+                  }
+                }, 1000);
+                
+              } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to process URL");
+              }
+            } else {
+              // We received HTML instead of JSON - likely a server error
+              throw new Error("Server error: Received HTML instead of JSON. The API endpoint might be incorrect.");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            
+            // Hide loading spinner
+            document.getElementById("loading-spinner").style.display = "none";
+            
+            // Show error message
+            const errorMessage = document.getElementById("error-message");
+            errorMessage.textContent = error.message || "An error occurred while processing the URL.";
+            errorMessage.style.display = "block";
+            
+            // Restart voice recognition after error
+            setTimeout(() => {
+              if (!isListening) {
+                console.log("Restarting recognition after URL processing error");
+                startListening();
+              }
+            }, 500);
+          }
+        });
+      
+      // Function to reset audio state for new content
+      function resetAudioState() {
+        console.log("Resetting audio state for new content");
+        // Reset any existing audio playback
+        if (window.currentAudio) {
+          window.currentAudio.pause();
+          window.currentAudio.currentTime = 0; // Reset to beginning
+          window.currentAudio = null; // Completely remove the reference
+        }
+        if (window.speechSynthesis && window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
+        }
+        
+        // Reset audio data and flags
+        window.audioData = null;
+        audioPausedByWakeWord = false;
+        audioWasPlaying = false;
+        
+        // Reset UI elements
+        document.getElementById("play-summary").style.display = "inline-block";
+        document.getElementById("pause-summary").style.display = "none";
+        document.getElementById("audio-time").style.display = "none";
+      }
+      
+      // Voice recognition for "Hey Saara"
+      let recognition;
+      let isListening = false;
+      let wakeWordDetected = false;
+      let voiceDetected = false;
+      let energyThreshold = 0.15;
+      let systemAudioFingerprints = [];
+      let isAudioProcessingActive = false;
+      let audioContext = null;
+      let microphoneStream = null;
+      let audioAnalyser = null;
+      
+      // Variables for wake word detection and audio handling
+      let commandTimeout;
+      let recognitionAttempts = 0;
+      const MAX_RECOGNITION_ATTEMPTS = 999999; // Effectively infinite attempts
+      let lastCommandTime = 0;
+      let commandProcessing = false;
+      let audioPausedByWakeWord = false; // Track if audio was paused by wake word
+      let audioWasPlaying = false; // Track if audio was playing before wake word
+      let isPlayingSystemAudio = false; // Flag to track if system is playing audio
+      let audioPlaybackStartTime = 0; // Track when system audio started
+      let lastAudioVolume = 0; // Track audio volume
+      let wakeWordSensitivityReduced = false; // Flag to track if sensitivity is reduced
+      const WAKE_WORD_NORMAL_THRESHOLD = 15; // Extremely low threshold for better detection
+      const WAKE_WORD_REDUCED_THRESHOLD = 25; // Lower threshold during audio playback
+      let currentWakeWordThreshold = WAKE_WORD_NORMAL_THRESHOLD; // Dynamic threshold
+      let audioPlaybackCooldown = false;
+      const AUDIO_COOLDOWN_DURATION = 300; // Very short cooldown
+      let audioPlaybackDelayTimer = null; // Timer for delayed playback
+      let audioMonitoringInterval = null; // Interval for monitoring audio playback
+      let lastWakeWordAttemptTime = 0; // Track when the last wake word attempt was made
+      
+      // New variables for continuous listening
+      let recognitionWatchdog = null;
+      const WATCHDOG_INTERVAL = 3000; // Check every 3 seconds
+      
+      // Advanced audio processing variables
+      // Initialize Web Audio API
+      if ('AudioContext' in window || 'webkitAudioContext' in window) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      // Initialize voice recognition
+      function setupSpeechRecognition() {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+          // Use standard SpeechRecognition if available, fall back to webkit prefix
+          recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.maxAlternatives = 5; // Increased from 3 to 5 for better alternatives
+          recognition.lang = 'en-US'; // Set language explicitly
+          
+          recognition.onstart = function() {
+            isListening = true;
+            document.getElementById('voice-button').classList.add('listening');
+            updateVoiceStatus('Listening for "Hey Saara"', 'show');
+            console.log("Voice recognition started");
+          };
+          
+          recognition.onend = function() {
+            isListening = false;
+            document.getElementById('voice-button').classList.remove('listening');
+            
+            // Only clear the status if we're not in wake word mode
+            if (!wakeWordDetected) {
+              updateVoiceStatus('', '');
+            }
+            
+            console.log("Voice recognition ended");
+            
+            // Always restart recognition with minimal delay
+            setTimeout(() => {
+              if (!isListening && !commandProcessing) {
+                console.log("Auto-restarting voice recognition from onend");
+                startListening();
+                recognitionAttempts = 0; // Reset attempts counter
+              }
+            }, 100); // Reduced delay for faster restart
+          };
+          
+          recognition.onerror = function(event) {
+            console.error("Speech recognition error:", event.error);
+            
+            // Handle specific errors
+            if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+              updateVoiceStatus('Microphone access denied. Please enable permissions.', 'error');
+              recognitionAttempts = MAX_RECOGNITION_ATTEMPTS; // Stop trying
+            }
+            else if (event.error === 'no-speech') {
+              // This is common, don't treat as a real error
+              console.log("No speech detected");
+              // Don't increment attempts for no-speech errors
+            }
+            else if (event.error === 'aborted') {
+              console.log("Recognition aborted");
+              // Don't increment attempts for aborted recognition
+            }
+            else {
+              updateVoiceStatus(`Error: ${event.error}. Click microphone to try again.`, 'error');
+              recognitionAttempts++; // Count other errors as attempts
+            }
+          };
+          
+          recognition.onresult = function(event) {
+            let transcripts = [];
+            let confidences = [];
+            let isFinal = false;
+            
+            // Capture all alternatives for better wake word detection
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              // Get all alternatives for this result
+              for (let j = 0; j < event.results[i].length; j++) {
+                const transcript = event.results[i][j].transcript.trim().toLowerCase();
+                const confidence = event.results[i][j].confidence;
+                transcripts.push(transcript);
+                confidences.push(confidence);
+              }
+              
+              isFinal = event.results[i].isFinal;
+              
+              console.log(`Transcript [${i}]: "${transcripts[0]}" (Final: ${isFinal}, Confidence: ${confidences[0].toFixed(2)}), Alternatives: ${transcripts.length}`);
+              
+              // Process only when we have a final result
+              if (isFinal) {
+                // Wake word mode: check all alternatives for wake word
+                if (!wakeWordDetected && !commandProcessing) {
+                  // Improved wake word detection with multiple variations and similarity scoring
+                  const wakeWordVariations = [
+                    "hey saara", "hey sara", "hey sarah", "haisara", 
+                    "hey zahra", "hey zara", "hey seara", "hi sara", "hi saara",
+                    "hisara", "hisaara", "hay sara", "hay saara"
+                  ];
+                  
+                  // Check all transcription alternatives with confidence and similarity
+                  let bestMatch = {
+                    detected: false,
+                    transcript: '',
+                    similarity: 0,
+                    confidence: 0,
+                    combinedScore: 0
+                  };
+                  
+                  // Process each transcript alternative
+                  for (let t = 0; t < transcripts.length; t++) {
+                    const transcript = transcripts[t];
+                    const confidence = confidences[t];
+                    
+                    // Check for exact matches first (highest priority)
+                    const exactMatch = wakeWordVariations.some(wakeWord => 
+                      transcript.includes(wakeWord)
+                    );
+                    
+                    if (exactMatch) {
+                      bestMatch = {
+                        detected: true,
+                        transcript: transcript,
+                        similarity: 100,
+                        confidence: confidence,
+                        combinedScore: confidence * 100
+                      };
+                      break; // Exit early on exact match
+                    }
+                    
+                    // If no exact match, check for similarity
+                    if (!exactMatch && transcript.length >= 4) { // Only check longer phrases
+                      for (const wakeWord of wakeWordVariations) {
+                        // Check each word in the transcript against wake words
+                        const words = transcript.split(' ');
+                        for (let i = 0; i < words.length; i++) {
+                          // Try combinations of 1-3 words
+                          for (let j = 1; j <= 3 && i + j <= words.length; j++) {
+                            const phrase = words.slice(i, i + j).join(' ');
+                            if (phrase.length >= 4) { // Only check meaningful phrases
+                              const similarity = calculateSimilarity(phrase, wakeWord);
+                              const combinedScore = similarity * confidence;
+                              
+                              // Update if this is a better match
+                              if (similarity >= 75 && combinedScore > bestMatch.combinedScore) {
+                                bestMatch = {
+                                  detected: true,
+                                  transcript: transcript,
+                                  similarity: similarity,
+                                  confidence: confidence,
+                                  combinedScore: combinedScore
+                                };
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                  
+                  // Process the best match if it meets our threshold
+                  if (bestMatch.detected) {
+                    // Add audio timing and sensitivity check
+                    const timeSinceAudioStart = Date.now() - audioPlaybackStartTime;
+                    
+                    // Use advanced audio analysis if available
+                    let isLikelySystemAudio = false;
+                    
+                    if (isAudioProcessingActive && audioAnalyser) {
+                      // Use advanced audio processing
+                      // Check timing, voice activity, and audio pattern analysis
+                      isLikelySystemAudio = isSystemAudioEcho(timeSinceAudioStart, bestMatch.confidence);
+                    } else {
+                      // Fallback to basic timing and confidence check
+                      isLikelySystemAudio = audioPlaybackCooldown || 
+                                          (isPlayingSystemAudio && timeSinceAudioStart < 5000 && bestMatch.confidence < 0.7);
+                    }
+                    
+                    console.log(`WAKE WORD MATCH: "${bestMatch.transcript}" (Similarity: ${bestMatch.similarity}%, Confidence: ${(bestMatch.confidence * 100).toFixed(1)}%, Combined: ${bestMatch.combinedScore.toFixed(1)})`);
+                    console.log(`Current threshold: ${currentWakeWordThreshold}, Is playing system audio: ${isPlayingSystemAudio}, Time since audio start: ${timeSinceAudioStart}ms, Is likely echo: ${isLikelySystemAudio}`);
+                    
+                    // Only activate if combined score meets current threshold AND not likely system audio
+                    if (bestMatch.combinedScore >= currentWakeWordThreshold && !isLikelySystemAudio) {
+                      console.log(`WAKE WORD ACTIVATED: "${bestMatch.transcript}" (Passed sensitivity and timing checks)`);
+                      wakeWordDetected = true;
+                      updateVoiceStatus('Listening for command...', 'wake-word');
+                      
+                      // Play a sound to indicate wake word detection
+                      playWakeWordSound();
+                      
+                      // Clear any existing command timeout
+                      if (commandTimeout) clearTimeout(commandTimeout);
+                      
+                      // Force pause any playing audio
+                      console.log("Checking for audio to pause...");
+                      console.log("Current audio state:", {
+                        currentAudioExists: !!window.currentAudio,
+                        isPlayingSystemAudio: isPlayingSystemAudio,
+                        audioPlaybackStartTime: audioPlaybackStartTime
+                      });
+                      
+                      // Check if audio is playing and pause it
+                      if (window.currentAudio) {
+                        console.log("Current audio found, pausing...");
+                        console.log("Audio paused state before:", window.currentAudio.paused);
+                        
+                        try {
+                          // Force pause the audio
+                          window.currentAudio.pause();
+                          audioWasPlaying = true;
+                          audioPausedByWakeWord = true;
+                          
+                          // Show play button, hide pause button
+                          document.getElementById("play-summary").style.display = "inline-block";
+                          document.getElementById("pause-summary").style.display = "none";
+                          console.log("Audio paused due to wake word detection");
+                          
+                          // Clear audio monitoring
+                          if (audioMonitoringInterval) {
+                            clearInterval(audioMonitoringInterval);
+                            audioMonitoringInterval = null;
+                            console.log("Audio monitoring cleared due to wake word detection");
+                          }
+                        } catch (err) {
+                          console.error("Error pausing audio:", err);
+                        }
+                      } else if (window.speechSynthesis && window.speechSynthesis.speaking) {
+                        window.speechSynthesis.pause();
+                        audioWasPlaying = true;
+                        audioPausedByWakeWord = true;
+                        document.getElementById("play-summary").style.display = "inline-block";
+                        document.getElementById("pause-summary").style.display = "none";
+                        console.log("Speech synthesis paused due to wake word detection");
+                      } else {
+                        console.log("No audio found to pause");
+                      }
+                      
+                      // Set a timeout to reset wake word if no command follows
+                      commandTimeout = setTimeout(() => {
+                        wakeWordDetected = false;
+                        updateVoiceStatus('Listening for "Hey Saara"', 'show');
+                        console.log("Command timeout - returning to wake word detection");
+                        
+                        // Resume audio if it was paused by wake word and no command was received
+                        if (audioPausedByWakeWord && audioWasPlaying) {
+                          resumeAudioPlayback();
+                        }
+                        audioPausedByWakeWord = false;
+                        audioWasPlaying = false;
+                      }, 10000); // Reduced timeout to 10 seconds for better responsiveness
+                    }
+                  }
+                }
+                // Command mode: process the command
+                else if (wakeWordDetected && !commandProcessing) {
+                  commandProcessing = true;
+                  
+                  // Clear command timeout
+                  if (commandTimeout) {
+                    clearTimeout(commandTimeout);
+                    commandTimeout = null;
+                  }
+                  
+                  // Process the command with the highest confidence
+                  processVoiceCommand(transcripts[0], confidences[0]);
+                }
+              }
+            }
+          };
+          
+          console.log("Speech recognition initialized");
+          return true;
+        } else {
+          console.error("Speech Recognition API not supported in this browser");
+          updateVoiceStatus('Voice recognition not supported in this browser', 'error');
+          return false;
+        }
+      }
+      
+      // Helper function to calculate string similarity (Levenshtein distance)
+      function calculateSimilarity(str1, str2) {
+        if (str1.length === 0) return str2.length;
+        if (str2.length === 0) return str1.length;
+        
+        const matrix = [];
+        
+        // Initialize matrix
+        for (let i = 0; i <= str1.length; i++) {
+          matrix[i] = [i];
+        }
+        
+        for (let j = 0; j <= str2.length; j++) {
+          matrix[0][j] = j;
+        }
+        
+        // Fill matrix
+        for (let i = 1; i <= str1.length; i++) {
+          for (let j = 1; j <= str2.length; j++) {
+            const cost = str1[i-1] === str2[j-1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+              matrix[i-1][j] + 1,      // deletion
+              matrix[i][j-1] + 1,      // insertion
+              matrix[i-1][j-1] + cost  // substitution
+            );
+          }
+        }
+        
+        // Calculate similarity as a percentage (0-100)
+        const maxLength = Math.max(str1.length, str2.length);
+        const distance = matrix[str1.length][str2.length];
+        return Math.round((1 - distance / maxLength) * 100);
+      }
+      
+      // Function to check if current audio is likely an echo of system audio
+      function isSystemAudioEcho(timeSinceAudioStart, confidence) {
+        // If not playing system audio, it's not an echo
+        if (!isPlayingSystemAudio) {
+          return false;
+        }
+        
+        // During cooldown period, almost certainly an echo
+        if (audioPlaybackCooldown) {
+          console.log("Echo rejected: Still in cooldown period");
+          return true;
+        }
+        
+        // If very soon after audio start, likely an echo
+        if (timeSinceAudioStart < 500) {
+          console.log("Echo rejected: Too soon after audio start");
+          return true;
+        }
+        
+        // Modified: Don't rely solely on voice activity detection during audio playback
+        // This allows wake word detection even when voice activity might be uncertain
+        if (!voiceDetected && confidence < 0.3) {
+          console.log("Echo rejected: No voice activity detected with low confidence");
+          return true;
+        }
+        
+        // If confidence is very low during audio playback, likely an echo
+        if (confidence < 0.3 && isPlayingSystemAudio) {
+          console.log("Echo rejected: Low confidence during audio playback");
+          return true;
+        }
+        
+        // If we have frequency data, analyze it
+        if (audioAnalyser) {
+          // Get current frequency data
+          const frequencyData = new Uint8Array(audioAnalyser.frequencyBinCount);
+          audioAnalyser.getByteFrequencyData(frequencyData);
+          
+          // Check if current audio has human voice characteristics
+          const humanVoiceScore = analyzeForHumanVoice(frequencyData);
+          
+          if (humanVoiceScore < 0.1) {
+            console.log(`Echo rejected: Low human voice score (${humanVoiceScore.toFixed(3)})`);
+            return true;
+          }
+        }
+        
+        // Passed all checks, likely not an echo
+        console.log("Not an echo: Passed all checks");
+        return false;
+      }
+      
+      // Function to process voice commands
+      function processVoiceCommand(command, confidence) {
+        updateVoiceStatus('Processing: ' + command, 'active-listening');
+        console.log(`Processing command: "${command}" (Confidence: ${(confidence * 100).toFixed(1)}%)`);
+        
+        try {
+          // Clean up the command by removing wake word remains and common variations
+          const cleanCommand = command.replace(/hey saara|hey sara|hey sarah|haisara|hey zahra|hey zara|hey seara|hi sara|hi saara|hisara|hisaara|hay sara|hay saara/gi, '').trim();
+          
+          // Use the GPT-4 autocorrection API with fuzzy matching fallback
+          fetch('/correct-voice-command', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              command: cleanCommand,
+              confidence: confidence
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Command correction result:', data);
+            
+            // Use the corrected command if available
+            const correctedCommand = data.corrected_command || cleanCommand;
+            const correctionMethod = data.correction_method || 'none';
+            
+            // Log the correction details
+            if (correctionMethod !== 'none') {
+              console.log(`Command corrected using ${correctionMethod}: "${cleanCommand}" → "${correctedCommand}" (Confidence: ${(data.confidence * 100).toFixed(1)}%)`);
+              updateVoiceStatus(`Corrected: ${correctedCommand}`, 'active-listening');
+              
+              // Show the correction in the UI
+              const correctionElement = document.getElementById('command-correction');
+              let correctionMessage = '';
+              if (correctionMethod === 'dictionary') {
+                correctionMessage = `Scientific term corrected: "${cleanCommand}" → "${correctedCommand}"`;
+              } else if (correctionMethod === 'gpt-4') {
+                correctionMessage = `AI corrected: "${cleanCommand}" → "${correctedCommand}"`;
+              } else if (correctionMethod === 'fuzzy') {
+                correctionMessage = `Similar match: "${cleanCommand}" → "${correctedCommand}"`;
+              } else {
+                correctionMessage = `"${cleanCommand}" → "${correctedCommand}"`;
+              }
+              correctionElement.textContent = correctionMessage;
+              correctionElement.className = 'command-correction show ' + correctionMethod;
+              
+              // Hide the correction after a delay
+              setTimeout(() => {
+                correctionElement.className = 'command-correction';
+              }, 5000);
+              
+              // Add a small delay to show the correction before processing
+              setTimeout(() => {
+                processCommand(correctedCommand);
+              }, 800);
+            } else {
+              // No correction needed, process the original cleaned command
+              console.log('No correction needed, using original command');
+              processCommand(cleanCommand);
+            }
+          })
+          .catch(error => {
+            console.error('Error correcting command:', error);
+            // Fallback to processing the original command if correction fails
+            processCommand(cleanCommand);
+          });
+          
+        } catch (error) {
+          console.error('Error processing voice command:', error);
+          updateVoiceStatus('Error processing command', 'error');
+          
+          // Reset after error
+          resetCommandState();
+        }
+      }
+      
+      // Helper function to process the command after correction
+      function processCommand(cleanCommand) {
+        try {
+          // Process commands based on priority and type
+          if (processAudioCommand(cleanCommand)) {
+            // Audio command was processed successfully
+            console.log("Audio command processed");
+          }
+          else if (processLanguageCommand(cleanCommand)) {
+            // Language command was processed successfully
+            console.log("Language command processed");
+          }
+          else if (processSearchCommand(cleanCommand)) {
+            // Search command was processed successfully
+            console.log("Search command processed");
+            
+            // Don't resume audio after search commands since a new task is starting
+            audioPausedByWakeWord = false;
+            audioWasPlaying = false;
+          }
+          else {
+            // Default to search if no specific command type matched
+            processDefaultSearch(cleanCommand);
+            
+            // Don't resume audio after default search since a new task is starting
+            audioPausedByWakeWord = false;
+            audioWasPlaying = false;
+          }
+        } finally {
+          // After command processing, reset to wake word detection
+          resetCommandState();
+        }
+      }
+      
+      // Helper function to reset command state
+      function resetCommandState() {
+        wakeWordDetected = false;
+        updateVoiceStatus('Listening for "Hey Saara"', 'show');
+        
+        // Update last command time for restart logic
+        lastCommandTime = Date.now();
+        
+        // Clear any existing command timeout
+        if (commandTimeout) {
+          clearTimeout(commandTimeout);
+          commandTimeout = null;
+        }
+        
+        // Ensure we restart recognition properly
+        setTimeout(() => {
+          // Reset command processing flag
+          commandProcessing = false;
+          
+          // Make sure recognition is still running
+          if (!isListening) {
+            console.log("Restarting recognition after command processing");
+            startListening();
+          }
+        }, 300);
+      }
+      
+      // Handle audio-specific commands
+      function processAudioCommand(cleanCommand) {
+        // Resume command - new
+        if (cleanCommand.match(/resume|resume audio|continue|continue audio|resume playback|continue playback/i)) {
+          console.log('Resume audio command detected');
+          if (audioPausedByWakeWord && audioWasPlaying) {
+            resumeAudioPlayback();
+            updateVoiceStatus('Resuming audio', 'active-listening');
+            audioPausedByWakeWord = false;
+            audioWasPlaying = false;
+            
+            // Set echo cancellation flags when resuming
+            isPlayingSystemAudio = true;
+            audioPlaybackStartTime = Date.now();
+            audioPlaybackCooldown = true;
+            wakeWordSensitivityReduced = true;
+            currentWakeWordThreshold = WAKE_WORD_REDUCED_THRESHOLD;
+            
+            // Clear cooldown after delay
+            setTimeout(() => {
+              audioPlaybackCooldown = false;
+              console.log("Audio playback cooldown ended after resume");
+            }, AUDIO_COOLDOWN_DURATION);
+            
+            // Force restart recognition
+            setTimeout(() => {
+              if (!isListening) {
+                console.log("Restarting recognition after resume command");
+                startListening();
+              }
+            }, 500);
+          } else {
+            updateVoiceStatus('No audio was paused to resume', 'error');
+          }
+          return true;
+        }
+        // Stop command - new
+        else if (cleanCommand.match(/stop completely|stop playback completely|terminate audio|terminate playback/i)) {
+          console.log('Stop audio completely command detected');
+          if (window.currentAudio) {
+            window.currentAudio.pause();
+            
+            // Clear any existing audio monitoring
+            if (audioMonitoringInterval) {
+              clearInterval(audioMonitoringInterval);
+              audioMonitoringInterval = null;
+            }
+            
+            // Reset audio state
+            window.currentAudio = null;
+            audioPausedByWakeWord = false;
+            audioWasPlaying = false;
+            isPlayingSystemAudio = false;
+            wakeWordSensitivityReduced = false;
+            currentWakeWordThreshold = WAKE_WORD_NORMAL_THRESHOLD;
+            
+            // Update UI
+            document.getElementById("play-summary").style.display = "inline-block";
+            document.getElementById("pause-summary").style.display = "none";
+            updateVoiceStatus('Audio stopped completely', 'active-listening');
+            
+            // Update status to indicate we're back to listening for wake word
+            setTimeout(() => {
+              updateVoiceStatus('Listening for "Hey Saara"', 'show');
+            }, 1500);
+            
+            // Force restart recognition
+            setTimeout(() => {
+              if (!isListening) {
+                console.log("Restarting recognition after stop command");
+                startListening();
+              }
+            }, 500);
+          } else if (window.speechSynthesis && window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            
+            // Reset audio state
+            audioPausedByWakeWord = false;
+            audioWasPlaying = false;
+            isPlayingSystemAudio = false;
+            wakeWordSensitivityReduced = false;
+            currentWakeWordThreshold = WAKE_WORD_NORMAL_THRESHOLD;
+            
+            // Update UI
+            document.getElementById("play-summary").style.display = "inline-block";
+            document.getElementById("pause-summary").style.display = "none";
+            updateVoiceStatus('Speech synthesis stopped completely', 'active-listening');
+            
+            // Update status to indicate we're back to listening for wake word
+            setTimeout(() => {
+              updateVoiceStatus('Listening for "Hey Saara"', 'show');
+            }, 1500);
+            
+            // Force restart recognition after error
+            setTimeout(() => {
+              if (!isListening) {
+                console.log("Restarting recognition after stop audio error");
+                startListening();
+              }
+            }, 500);
+          } else {
+            updateVoiceStatus('No audio is currently playing', 'error');
+            
+            // Reset state and ensure return to listening mode
+            setTimeout(() => {
+              wakeWordDetected = false;
+              commandProcessing = false;
+              updateVoiceStatus('Listening for "Hey Saara"', 'show');
+              
+              if (!isListening) {
+                console.log("Restarting recognition after stop audio error");
+                startListening();
+              }
+            }, 2000);
+          }
+          return true;
+        }
+        // Pause Audio command
+        else if (cleanCommand.match(/pause audio|pause the audio|stop audio|stop the audio/i)) {
+          console.log('Pause audio command detected');
+          
+          if ((window.currentAudio && !window.currentAudio.paused) || 
+              (window.speechSynthesis && window.speechSynthesis.speaking && !window.speechSynthesis.paused)) {
+            // Create a direct function to handle the audio stopping and feedback
+            const stopAudioAndProvideConfirmation = function() {
+              // Pause current audio
+              if (window.currentAudio) {
+                window.currentAudio.pause();
+                // Show play button, hide pause button
+                document.getElementById("play-summary").style.display = "inline-block";
+                document.getElementById("pause-summary").style.display = "none";
+              } else if (window.speechSynthesis && window.speechSynthesis.speaking) {
+                window.speechSynthesis.pause();
+                // Show play button, hide pause button
+                document.getElementById("play-summary").style.display = "inline-block";
+                document.getElementById("pause-summary").style.display = "none";
+              }
+              
+              updateVoiceStatus('Audio paused', 'active-listening');
+              
+              // Reset wake word detection and command processing states
+              wakeWordDetected = false;
+              commandProcessing = false;
+              
+              // Reset echo cancellation flags
+              isPlayingSystemAudio = false;
+              wakeWordSensitivityReduced = false;
+              currentWakeWordThreshold = WAKE_WORD_NORMAL_THRESHOLD;
+              
+              // Use direct speech synthesis for confirmation
+              try {
+                console.log("Providing 'Audio stopped' confirmation");
+                const utterance = new SpeechSynthesisUtterance("Audio stopped");
+                utterance.volume = 1.0;
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.lang = 'en-US';
+                
+                // Try to get available voices
+                let voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                  // Get a female voice if available
+                  const femaleVoice = voices.find(voice => 
+                    voice.name.includes('female') || 
+                    voice.name.includes('Female') || 
+                    voice.name.includes('Google UK English Female') ||
+                    voice.name.includes('Microsoft Zira')
+                  );
+                  
+                  if (femaleVoice) {
+                    utterance.voice = femaleVoice;
+                  }
+                }
+                
+                // Set flags for echo cancellation
+                isPlayingSystemAudio = true;
+                
+                // Speak the confirmation
+                window.speechSynthesis.speak(utterance);
+                
+                // Reset flags after speech ends
+                utterance.onend = function() {
+                  console.log("Audio stopped confirmation completed");
+                  isPlayingSystemAudio = false;
+                  
+                  // Update status to indicate we're back to listening for wake word
+                  updateVoiceStatus('Listening for "Hey Saara"', 'show');
+                  
+                  // Force restart recognition
+                  if (!isListening) {
+                    console.log("Restarting recognition after pause command");
+                    startListening();
+                  }
+                };
+              } catch (error) {
+                console.error("Error providing audio stopped confirmation:", error);
+                
+                // Still update status even if speech synthesis fails
+                updateVoiceStatus('Listening for "Hey Saara"', 'show');
+                
+                // Force restart recognition after error
+                setTimeout(() => {
+                  if (!isListening) {
+                    console.log("Restarting recognition after pause audio error");
+                    startListening();
+                  }
+                }, 500);
+              }
+            };
+            
+            // Execute the function directly
+            stopAudioAndProvideConfirmation();
+            
+            return true;
+          } else {
+            updateVoiceStatus('No audio is currently playing', 'error');
+            
+            // Reset wake word detection and command processing states
+            wakeWordDetected = false;
+            commandProcessing = false;
+            
+            // Update status to indicate we're back to listening for wake word
+            setTimeout(() => {
+              updateVoiceStatus('Listening for "Hey Saara"', 'show');
+            }, 1500);
+            
+            // Force restart recognition after error
+            setTimeout(() => {
+              if (!isListening) {
+                console.log("Restarting recognition after pause audio error");
+                startListening();
+              }
+            }, 500);
+          }
+          return true;
+        }
+        // Play Audio command
+        else if (cleanCommand.match(/play audio|play the audio|start audio|start the audio/i)) {
+          console.log('Play audio command detected');
+          
+          // Get the summary text
+          const summaryText = document.getElementById('result-summary').textContent;
+          if (summaryText && summaryText.trim() !== '') {
+            // First provide audio feedback
+            provideAudioFeedback("Playing audio");
+            
+            // Wait for the feedback to complete before playing the actual audio
+            setTimeout(() => {
+              console.log("Attempting to play audio after feedback");
+              
+              // Check if audio data is available
+              if (!window.audioData) {
+                console.error("No audio data available, attempting to generate it");
+                // Try to generate audio if not available
+                const language = window.currentLanguage || 'en';
+                const textToPlay = document.getElementById('result-summary').textContent;
+                
+                // Call the backend to generate audio if needed
+                fetch('/generate-audio', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    text: textToPlay,
+                    language: language
+                  })
+                })
+                .then(response => response.json())
+                .then(data => {
+                  if (data.audio) {
+                    window.audioData = data.audio;
+                    console.log("Audio data generated successfully, playing now");
+                    // Now play the audio
+                    playAudio();
+                  } else {
+                    console.error("Failed to generate audio data");
+                    updateVoiceStatus('Failed to generate audio', 'error');
+                  }
+                })
+                .catch(err => {
+                  console.error("Error generating audio:", err);
+                  updateVoiceStatus('Error generating audio', 'error');
+                });
+              } else {
+                // Audio data is available, play it directly
+                console.log("Audio data available, playing directly");
+                playAudio();
+              }
+            }, 1500); // Increased delay to ensure speech synthesis completes
+            
+            return true;
+          } else {
+            updateVoiceStatus('No text available to play', 'error');
+            provideAudioFeedback("No text available to play");
+            return true;
+          }
+        }
+        return false; // No audio command matched
+      }
+      
+      // Handle language selection commands
+      function processLanguageCommand(cleanCommand) {
+        // English language command
+        if (cleanCommand.match(/english|set english|switch to english|use english|change to english/i)) {
+          console.log('English language command detected');
+          document.getElementById("language").value = "en";
+          updateVoiceStatus('Language set to English', 'active-listening');
+          provideAudioFeedback("Language set to English");
+          return true;
+        }
+        // Hindi language command
+        else if (cleanCommand.match(/hindi|set hindi|switch to hindi|use hindi|change to hindi/i)) {
+          console.log('Hindi language command detected');
+          document.getElementById("language").value = "hi";
+          updateVoiceStatus('Language set to Hindi', 'active-listening');
+          provideAudioFeedback("Language set to Hindi");
+          return true;
+        }
+        // Kannada language command
+        else if (cleanCommand.match(/kannada|set kannada|switch to kannada|use kannada|change to kannada/i)) {
+          console.log('Kannada language command detected');
+          document.getElementById("language").value = "kn";
+          updateVoiceStatus('Language set to Kannada', 'active-listening');
+          provideAudioFeedback("Language set to Kannada");
+          return true;
+        }
+        return false; // No language command matched
+      }
+      
+      // Handle search-specific commands
+      function processSearchCommand(cleanCommand) {
+        // Explicit search command
+        if (cleanCommand.includes('search for') || cleanCommand.includes('search') || cleanCommand.includes('find')) {
+          let searchTerm = cleanCommand.replace(/search for|search|find/i, '').trim();
+          
+          // If search term is empty, try using the whole command
+          if (!searchTerm && cleanCommand) {
+            searchTerm = cleanCommand;
+          }
+          
+          if (searchTerm) {
+            console.log('Setting search query to:', searchTerm);
+            document.getElementById('search-query').value = searchTerm;
+            // Force submit the search form after a short delay
+            setTimeout(() => {
+              console.log('Submitting search form');
+              document.getElementById('search-form').dispatchEvent(new Event('submit', { bubbles: true }));
+              
+              // Explicit reset of state variables
+              wakeWordDetected = false;
+              commandProcessing = false;
+              
+              // Update status to indicate we're back to listening for wake word
+              setTimeout(() => {
+                updateVoiceStatus('Listening for "Hey Saara"', 'show');
+              }, 1500);
+              
+              // Force restart recognition
+              setTimeout(() => {
+                if (!isListening) {
+                  console.log("Restarting recognition after search submission");
+                  startListening();
+                }
+              }, 1000);
+              
+              // Add an additional failsafe restart
+              setTimeout(() => {
+                if (!isListening) {
+                  console.log("FAILSAFE: Restarting recognition after search submission");
+                  try {
+                    // Try to stop any existing recognition first
+                    if (recognition) {
+                      try { recognition.abort(); } catch(e) { console.error("Error aborting:", e); }
+                      try { recognition.stop(); } catch(e) { console.error("Error stopping:", e); }
+                    }
+                    // Recreate and restart
+                    setupSpeechRecognition();
+                    startListening();
+                  } catch(e) {
+                    console.error("Error in failsafe restart:", e);
+                  }
+                }
+              }, 3000);
+            }, 300);
+            updateVoiceStatus('Searching for: ' + searchTerm, 'active-listening');
+            provideAudioFeedback("Topic received: " + searchTerm);
+          } else {
+            updateVoiceStatus('Please specify what to search for', 'error');
+            
+            // Reset state for error case
+            setTimeout(() => {
+              wakeWordDetected = false;
+              commandProcessing = false;
+              updateVoiceStatus('Listening for "Hey Saara"', 'show');
+              
+              if (!isListening) {
+                console.log("Restarting recognition after search error");
+                startListening();
+              }
+            }, 2000);
+          }
+          return true;
+        }
+        // URL processing command
+        else if (cleanCommand.includes('process') || cleanCommand.includes('convert') || cleanCommand.includes('convert to braille') || cleanCommand.includes('summarize') || cleanCommand.includes('generate')) {
+          if (document.getElementById('url').value) {
+            // First provide audio feedback immediately based on the command
+            console.log("URL processing command detected:", cleanCommand);
+            
+            if (cleanCommand.includes('process')) {
+              console.log("Process command detected, providing feedback");
+              provideAudioFeedback("Processing");
+            } else if (cleanCommand.includes('generate')) {
+              console.log("Generate command detected, providing feedback");
+              provideAudioFeedback("Generating content");
+            } else if (cleanCommand.includes('convert') || cleanCommand.includes('convert to braille')) {
+              console.log("Convert command detected, providing feedback");
+              provideAudioFeedback("Converting to Braille");
+            } else if (cleanCommand.includes('summarize')) {
+              console.log("Summarize command detected, providing feedback");
+              provideAudioFeedback("Summarizing content");
+            } else {
+              console.log("Generic processing command detected, providing feedback");
+              provideAudioFeedback("Processing URL");
+            }
+            
+            // Wait for audio feedback to start before submitting the form
+            setTimeout(() => {
+              console.log("Submitting URL form after audio feedback");
+              
+              // Submit the form
+              document.getElementById('url-form').dispatchEvent(new Event('submit', { bubbles: true }));
+              
+              // Explicit reset of state variables
+              wakeWordDetected = false;
+              commandProcessing = false;
+              
+              // Update status to indicate we're back to listening for wake word
+              setTimeout(() => {
+                updateVoiceStatus('Listening for "Hey Saara"', 'show');
+              }, 1500);
+              
+              // Force restart recognition
+              setTimeout(() => {
+                if (!isListening) {
+                  console.log("Restarting recognition after process command");
+                  startListening();
+                }
+              }, 500);
+              
+              // Add an additional failsafe restart
+              setTimeout(() => {
+                if (!isListening) {
+                  console.log("FAILSAFE: Restarting recognition after URL processing");
+                  try {
+                    // Try to stop any existing recognition first
+                    if (recognition) {
+                      try { recognition.abort(); } catch(e) { console.error("Error aborting:", e); }
+                      try { recognition.stop(); } catch(e) { console.error("Error stopping:", e); }
+                    }
+                    // Recreate and restart
+                    setupSpeechRecognition();
+                    startListening();
+                  } catch(e) {
+                    console.error("Error in failsafe restart:", e);
+                  }
+                }
+              }, 3000);
+            }, 1000); // Increased delay to ensure speech synthesis completes
+            
+            return true;
+          } else {
+            updateVoiceStatus('Please provide a URL or search term first', 'error');
+            
+            // Provide audio feedback for error
+            provideAudioFeedback("Please provide a URL or search term first");
+            
+            // Reset state and ensure return to listening mode
+            setTimeout(() => {
+              wakeWordDetected = false;
+              commandProcessing = false;
+              updateVoiceStatus('Listening for "Hey Saara"', 'show');
+              
+              if (!isListening) {
+                console.log("Restarting recognition after process error");
+                startListening();
+              }
+            }, 2000);
+          }
+          return true;
+        }
+        return false; // No search command matched
+      }
+      
+      // Default search handler for non-specific commands
+      function processDefaultSearch(cleanCommand) {
+        if (cleanCommand) {
+          // If no specific command word was detected, assume it's a search
+          console.log('Direct search for:', cleanCommand);
+          document.getElementById('search-query').value = cleanCommand;
+          setTimeout(() => {
+            console.log('Submitting search form directly');
+            document.getElementById('search-form').dispatchEvent(new Event('submit', { bubbles: true }));
+            
+            // Ensure recognition restarts after search is submitted
+            setTimeout(() => {
+              updateVoiceStatus('Listening for "Hey Saara"', 'show');
+              if (!isListening) {
+                console.log("Restarting recognition after direct search");
+                startListening();
+              }
+            }, 1000);
+            
+            // Add an additional failsafe restart
+            setTimeout(() => {
+              if (!isListening) {
+                console.log("FAILSAFE: Restarting recognition after direct search");
+                try {
+                  // Try to stop any existing recognition first
+                  if (recognition) {
+                    try { recognition.abort(); } catch(e) { console.error("Error aborting:", e); }
+                    try { recognition.stop(); } catch(e) { console.error("Error stopping:", e); }
+                  }
+                  // Recreate and restart
+                  setupSpeechRecognition();
+                  startListening();
+                } catch(e) {
+                  console.error("Error in failsafe restart:", e);
+                }
+              }
+            }, 3000);
+          }, 300);
+          updateVoiceStatus('Searching for: ' + cleanCommand, 'active-listening');
+          provideAudioFeedback("Topic received: " + cleanCommand);
+          return true;
+        }
+        return false;
+      }
+      
+      // Function to start voice activity detection
+      function startVoiceActivityDetection() {
+        if (!audioAnalyser) return;
+        
+        // Voice activity detection using energy detection
+        const vadBuffer = new Float32Array(1024);
+        
+        setInterval(() => {
+          if (!isAudioProcessingActive || !audioAnalyser) return;
+          
+          // Get time domain data
+          audioAnalyser.getFloatTimeDomainData(vadBuffer);
+          
+          // Calculate energy level
+          let energy = 0;
+          for (let i = 0; i < vadBuffer.length; i++) {
+            energy += vadBuffer[i] * vadBuffer[i];
+          }
+          energy = energy / vadBuffer.length;
+          
+          // Update voice detection state
+          const previousVoiceState = voiceDetected;
+          voiceDetected = energy > energyThreshold;
+          
+          // Log voice detection state changes and handle them
+          if (voiceDetected !== previousVoiceState) {
+            // Only log when state changes to avoid console spam
+            console.log(`Voice activity: ${voiceDetected ? "Active" : "Inactive"} (Energy: ${energy.toFixed(4)})`);
+            
+            // If voice detected during system audio playback, it might be a command
+            if (voiceDetected && isPlayingSystemAudio) {
+              console.log("Voice detected during system audio - possible command");
+              
+              // If energy is significantly above threshold, temporarily boost sensitivity
+              if (energy > energyThreshold * 3) {
+                if (currentWakeWordThreshold > WAKE_WORD_NORMAL_THRESHOLD) {
+                  // Temporarily increase sensitivity to make wake word detection more responsive
+                  const originalThreshold = currentWakeWordThreshold;
+                  currentWakeWordThreshold = WAKE_WORD_NORMAL_THRESHOLD;
+                  
+                  console.log(`Temporarily increased wake word sensitivity (${originalThreshold} -> ${currentWakeWordThreshold})`);
+                  
+                  // Reset sensitivity after 3 seconds
+                  setTimeout(() => {
+                    if (isPlayingSystemAudio && wakeWordSensitivityReduced) {
+                      currentWakeWordThreshold = WAKE_WORD_REDUCED_THRESHOLD;
+                      console.log(`Restored wake word sensitivity (${WAKE_WORD_NORMAL_THRESHOLD} -> ${WAKE_WORD_REDUCED_THRESHOLD})`);
+                    }
+                  }, 3000);
+                }
+              }
+            }
+          }
+        }, 100); // Check every 100ms
+      }
+      
+      // Function to start voice recognition
+      function startListening() {
+        try {
+          if (!isListening && recognition) {
+            recognition.start();
+            isListening = true; // Set flag immediately to prevent multiple starts
+            console.log("Recognition started");
+            
+            // If we're playing audio, make sure we're in the right sensitivity mode
+            if (isPlayingSystemAudio) {
+              const isNonEnglishAudio = window.currentLanguage && (window.currentLanguage === 'hi' || window.currentLanguage === 'kn');
+              wakeWordSensitivityReduced = true;
+              currentWakeWordThreshold = isNonEnglishAudio ? 10 : WAKE_WORD_REDUCED_THRESHOLD;
+              console.log(`Wake word threshold set to ${currentWakeWordThreshold} for playback`);
+            }
+          }
+        } catch (e) {
+          console.error('Recognition start error:', e);
+          isListening = false; // Reset flag on error
+          
+          // Try again after a short delay
+          setTimeout(() => {
+            if (!isListening && !commandProcessing) {
+              console.log("Retrying recognition start after error");
+              try {
+                recognition.start();
+                isListening = true;
+              } catch (retryError) {
+                console.error('Recognition retry error:', retryError);
+                
+                // If we still have an error, recreate the recognition object
+                console.log("Recreating recognition object after multiple failures");
+                setupSpeechRecognition();
+                setTimeout(() => {
+                  if (!isListening) startListening();
+                }, 500);
+              }
+            }
+          }, 500);
+        }
+      }
+      
+      // Function to stop listening
+      function stopListening() {
+        try {
+          recognition.stop();
+          isListening = false; // Set this flag immediately
+          console.log("Recognition stopped");
+        } catch (e) {
+          console.error('Recognition stop error:', e);
+        }
+      }
+      
+      // Function to pause listening
+      function pauseListening() {
+        try {
+          recognition.abort();
+          isListening = false; // Flag should be updated here too
+          console.log("Recognition paused (aborted)");
+        } catch (e) {
+          console.error('Recognition abort error:', e);
+        }
+      }
+      
+      // Initialize voice recognition on page load
+      window.addEventListener("DOMContentLoaded", function() {
+        setupSpeechRecognition();
+        
+        // Set up a watchdog timer to ensure recognition is always running
+        recognitionWatchdog = setInterval(() => {
+          if (!isListening && !commandProcessing) {
+            console.log("Watchdog: Recognition not active, restarting...");
+            startListening();
+          }
+        }, WATCHDOG_INTERVAL);
+        
+        // Set up an additional aggressive watchdog that will recreate the recognition object if needed
+        setInterval(() => {
+          if (!isListening && !commandProcessing) {
+            console.log("AGGRESSIVE WATCHDOG: Recognition not active for too long, performing full reset...");
+            try {
+              // Try to stop any existing recognition first
+              if (recognition) {
+                try { recognition.abort(); } catch(e) { console.error("Error aborting:", e); }
+                try { recognition.stop(); } catch(e) { console.error("Error stopping:", e); }
+              }
+              // Recreate and restart
+              setupSpeechRecognition();
+              startListening();
+            } catch(e) {
+              console.error("Error in aggressive watchdog restart:", e);
+            }
+          }
+        }, 8000); // Check every 8 seconds
+        
+        // Add favicon to prevent 404 errors
+        const favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        favicon.type = 'image/svg+xml';
+        favicon.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔊</text></svg>';
+        document.head.appendChild(favicon);
+        
+        // Initialize advanced audio processing for better echo cancellation
+        try {
+          // Request microphone access
+          navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then(stream => {
+              console.log("Microphone access granted for advanced echo cancellation");
+              
+              // Create audio source from microphone
+              microphoneStream = audioContext.createMediaStreamSource(stream);
+              
+              // Create analyzer for frequency domain processing
+              audioAnalyser = audioContext.createAnalyser();
+              audioAnalyser.fftSize = 1024;
+              audioAnalyser.smoothingTimeConstant = 0.8;
+              
+              // Connect microphone to analyzer (but not to destination to avoid feedback)
+              microphoneStream.connect(audioAnalyser);
+              
+              // Set up voice activity detection
+              startVoiceActivityDetection();
+              
+              isAudioProcessingActive = true;
+              console.log("Advanced audio processing initialized successfully");
+            })
+            .catch(err => {
+              console.error("Microphone access error:", err);
+              console.log("Using basic echo cancellation");
+            });
+        } catch (err) {
+          console.error("Audio processing initialization error:", err);
+          console.log("Falling back to basic echo cancellation");
+        }
+        
+        // Start listening automatically after page loads
+        setTimeout(() => {
+          if (!isListening) {
+            console.log("Auto-starting voice recognition");
+            startListening();
+          }
+        }, 1000);
+        
+        // Add event listeners for audio controls
+        document.getElementById("play-summary").addEventListener("click", function() {
+          playAudio();
+          
+          // Ensure recognition is active after manual play button click
+          setTimeout(() => {
+            if (!isListening) {
+              console.log("Ensuring recognition is active after manual play");
+              startListening();
+            }
+          }, 800);
+        });
+        
+        document.getElementById("pause-summary").addEventListener("click", function() {
+          pauseAudio();
+        });
+        
+        document.getElementById("skip-backward").addEventListener("click", function() {
+          skipAudio(-10);
+        });
+        
+        document.getElementById("skip-forward").addEventListener("click", function() {
+          skipAudio(10);
+        });
+        
+        // Add event listener for search form
+        document.getElementById("search-form").addEventListener("submit", async function(e) {
+          e.preventDefault();
+          
+          const searchQuery = document.getElementById("search-query").value.trim();
+          if (!searchQuery) {
+            return;
+          }
+          
+          // Show search results container
+          document.getElementById("search-results").style.display = "block";
+          
+          // Show loading spinner
+          document.getElementById("search-loading-spinner").style.display = "block";
+          
+          // Clear previous results
+          document.getElementById("results-container").innerHTML = "";
+          
+          try {
+            const response = await fetch('/search', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                topic: searchQuery
+              })
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              
+              // Hide loading spinner
+              document.getElementById("search-loading-spinner").style.display = "none";
+              
+              // Update results count
+              document.getElementById("results-count").textContent = 
+                `Search Results for "${searchQuery}" (${data.results ? data.results.length : 0})`;
+              
+              // Display results
+              const resultsContainer = document.getElementById("results-container");
+              
+              if (data.results && data.results.length > 0) {
+                // Create a row for the results
+                const row = document.createElement("div");
+                row.className = "row";
+                
+                // Add each result to the row
+                data.results.forEach(result => {
+                  const col = document.createElement("div");
+                  col.className = "col-md-6 mb-3";
+                  
+                  const resultCard = document.createElement("div");
+                  resultCard.className = `special-result ${result.source.toLowerCase()}-result`;
+                  
+                  const cardBody = document.createElement("div");
+                  cardBody.className = "result-card-body";
+                  
+                  // Title with icon
+                  const title = document.createElement("h5");
+                  title.className = "result-title";
+                  
+                  const sourceBadge = document.createElement("span");
+                  sourceBadge.className = `source-badge ${result.source.toLowerCase()}`;
+                  sourceBadge.innerHTML = `<i class="bi ${result.icon}"></i>`;
+                  
+                  title.appendChild(sourceBadge);
+                  title.appendChild(document.createTextNode(result.title));
+                  
+                  // Snippet
+                  const snippet = document.createElement("p");
+                  snippet.className = "result-snippet";
+                  snippet.textContent = result.snippet;
+                  
+                  // URL display
+                  if (result.link) {
+                    const urlDisplay = document.createElement("div");
+                    urlDisplay.className = "result-url";
+                    urlDisplay.style.fontSize = "0.8rem";
+                    urlDisplay.style.color = "#6c757d";
+                    urlDisplay.style.marginBottom = "0.5rem";
+                    urlDisplay.style.overflow = "hidden";
+                    urlDisplay.style.textOverflow = "ellipsis";
+                    urlDisplay.style.whiteSpace = "nowrap";
+                    
+                    // Create a simplified URL for display
+                    let displayUrl = result.link;
+                    try {
+                      const url = new URL(result.link);
+                      displayUrl = url.hostname + url.pathname;
+                      if (displayUrl.length > 40) {
+                        displayUrl = displayUrl.substring(0, 40) + "...";
+                      }
+                    } catch (e) {
+                      console.error("Error parsing URL:", e);
+                    }
+                    
+                    urlDisplay.textContent = displayUrl;
+                    cardBody.appendChild(urlDisplay);
+                  }
+                  
+                  // Action button
+                  const actionDiv = document.createElement("div");
+                  actionDiv.className = "result-actions mt-auto";
+                  
+                  const actionLink = document.createElement("a");
+                  actionLink.href = result.link;
+                  actionLink.className = "btn btn-primary";
+                  actionLink.target = "_blank";
+                  actionLink.innerHTML = `<i class="bi bi-box-arrow-up-right me-1"></i> Visit`;
+                  
+                  actionDiv.appendChild(actionLink);
+                  
+                  // Use URL button for Wikipedia and similar sources
+                  if (result.source === "Wikipedia") {
+                    const useUrlButton = document.createElement("button");
+                    useUrlButton.className = "btn btn-outline-primary ms-2";
+                    useUrlButton.innerHTML = `<i class="bi bi-arrow-down-circle me-1"></i> Use URL`;
+                    useUrlButton.onclick = function() {
+                      document.getElementById("url").value = result.link;
+                      // Removed: document.getElementById("search-results").style.display = "none";
+                      // Scroll to the URL form
+                      document.getElementById("url-form").scrollIntoView({ behavior: "smooth" });
+                      // Highlight the URL input
+                      const urlInput = document.getElementById("url");
+                      urlInput.classList.add("highlight-input");
+                      setTimeout(() => {
+                        urlInput.classList.remove("highlight-input");
+                      }, 2000);
+                    };
+                    actionDiv.appendChild(useUrlButton);
+                    
+                    // Automatically trigger the Use URL button for the first Wikipedia result
+                    if (result === data.results[0]) {
+                      // Set a small delay to ensure the UI is updated first
+                      setTimeout(() => {
+                        console.log("Automatically using first Wikipedia result URL:", result.link);
+                        document.getElementById("url").value = result.link;
+                        // Removed: document.getElementById("search-results").style.display = "none";
+                        // Scroll to the URL form
+                        document.getElementById("url-form").scrollIntoView({ behavior: "smooth" });
+                        // Highlight the URL input
+                        const urlInput = document.getElementById("url");
+                        urlInput.classList.add("highlight-input");
+                        setTimeout(() => {
+                          urlInput.classList.remove("highlight-input");
+                        }, 2000);
+                      }, 800);
+                    }
+                  }
+                  
+                  // Assemble the card
+                  cardBody.appendChild(title);
+                  cardBody.appendChild(snippet);
+                  cardBody.appendChild(actionDiv);
+                  resultCard.appendChild(cardBody);
+                  col.appendChild(resultCard);
+                  row.appendChild(col);
+                });
+                
+                resultsContainer.appendChild(row);
+              } else {
+                resultsContainer.innerHTML = `
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No results found for "${searchQuery}". Try a different search term.
+                  </div>
+                `;
+              }
+            } else {
+              throw new Error("Failed to fetch search results");
+            }
+          } catch (error) {
+            console.error("Search error:", error);
+            
+            // Hide loading spinner
+            document.getElementById("search-loading-spinner").style.display = "none";
+            
+            // Show error message
+            document.getElementById("results-container").innerHTML = `
+              <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                An error occurred while searching. Please try again later.
+              </div>
+            `;
+          }
+        });
+        
+        // Log that initialization is complete
+        console.log("Voice recognition and page handlers initialized");
+        
+        // Add event listeners for copy and download buttons
+        document.querySelector(".copy-summary-btn").addEventListener("click", function() {
+          const summaryText = document.getElementById("result-summary").textContent;
+          if (summaryText) {
+            navigator.clipboard.writeText(summaryText)
+              .then(() => {
+                console.log("Summary copied to clipboard");
+                showCopySuccess();
+              })
+              .catch(err => {
+                console.error("Error copying to clipboard:", err);
+              });
+          }
+        });
+
+        document.getElementById("download-summary-txt").addEventListener("click", function() {
+          const summaryText = document.getElementById("result-summary").textContent;
+          if (summaryText) {
+            const filename = "summary_" + new Date().toISOString().slice(0, 10) + ".txt";
+            downloadText(summaryText, filename);
+          }
+        });
+
+        document.getElementById("download-summary-doc").addEventListener("click", function() {
+          const summaryText = document.getElementById("result-summary").textContent;
+          if (summaryText) {
+            const filename = "summary_" + new Date().toISOString().slice(0, 10) + ".doc";
+            downloadWord(summaryText, filename);
+          }
+        });
+        
+        // Braille output buttons
+        // Copy braille button
+        document.querySelector(".copy-braille-btn").addEventListener("click", function() {
+          const brailleText = document.getElementById("braille-output").value;
+          if (brailleText) {
+            navigator.clipboard.writeText(brailleText)
+              .then(() => {
+                console.log("Braille copied to clipboard");
+                showCopySuccess();
+              })
+              .catch(err => {
+                console.error("Error copying to clipboard:", err);
+              });
+          }
+        });
+
+        document.getElementById("download-braille-txt").addEventListener("click", function() {
+          const brailleText = document.getElementById("braille-output").value;
+          if (brailleText) {
+            const filename = "braille_" + new Date().toISOString().slice(0, 10) + ".txt";
+            downloadText(brailleText, filename);
+          }
+        });
+
+        document.getElementById("download-braille-doc").addEventListener("click", function() {
+          const brailleText = document.getElementById("braille-output").value;
+          if (brailleText) {
+            const filename = "braille_" + new Date().toISOString().slice(0, 10) + ".doc";
+            downloadWord(brailleText, filename);
+          }
+        });
+        
+        // Cache clearing functionality
+        // Removed: document.getElementById("clear-all-cache").addEventListener("click", async function() {
+        // Removed:   // ...
+        // Removed: });
+        
+        // Check cache status on settings modal open
+        // Removed: const settingsModal = document.getElementById('settingsModal');
+        // Removed: if (settingsModal) {
+        // Removed:   settingsModal.addEventListener('show.bs.modal', async function() {
+        // Removed:     // ...
+        // Removed:   });
+        // Removed: }
+      });
+      
+      // Function to update voice status display
+      function updateVoiceStatus(message, className) {
+        const statusElement = document.getElementById('voice-status');
+        statusElement.textContent = message;
+        statusElement.className = 'voice-status ' + (className || '');
+        
+        // Make sure the status is visible
+        if (className) {
+          statusElement.classList.add('show');
+        }
+        
+        // Clear any existing timeout
+        if (window.statusTimeout) {
+          clearTimeout(window.statusTimeout);
+        }
+        
+        // Auto-hide status after delay unless it's the default "Listening for Hey Saara" message
+        if (className !== 'show') {
+          window.statusTimeout = setTimeout(() => {
+            // Transition back to the default status
+            updateVoiceStatus('Listening for "Hey Saara"', 'show');
+            
+            // Also hide any command correction display
+            const correctionElement = document.getElementById('command-correction');
+            correctionElement.className = 'command-correction';
+          }, 3000);
+        }
+      }
+      
+      // Function to play wake word sound
+      function playWakeWordSound() {
+        // Create a simple audio feedback
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = context.createOscillator();
+        const gainNode = context.createGain();
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, context.currentTime); // A5
+        oscillator.connect(gainNode);
+        gainNode.connect(context.destination);
+        
+        gainNode.gain.setValueAtTime(0, context.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, context.currentTime + 0.1);
+        gainNode.gain.linearRampToValueAtTime(0, context.currentTime + 0.5);
+        
+        oscillator.start(context.currentTime);
+        oscillator.stop(context.currentTime + 0.5);
+      }
+      
+      // Function to check if current audio is likely an echo of system audio
+      function isSystemAudioEcho(timeSinceAudioStart, confidence) {
+        // If not playing system audio, it's not an echo
+        if (!isPlayingSystemAudio) {
+          return false;
+        }
+        
+        // During cooldown period, almost certainly an echo
+        if (audioPlaybackCooldown) {
+          console.log("Echo rejected: Still in cooldown period");
+          return true;
+        }
+        
+        // If very soon after audio start, likely an echo
+        if (timeSinceAudioStart < 500) {
+          console.log("Echo rejected: Too soon after audio start");
+          return true;
+        }
+        
+        // Modified: Don't rely solely on voice activity detection during audio playback
+        // This allows wake word detection even when voice activity might be uncertain
+        if (!voiceDetected && confidence < 0.3) {
+          console.log("Echo rejected: No voice activity detected with low confidence");
+          return true;
+        }
+        
+        // If confidence is very low during audio playback, likely an echo
+        if (confidence < 0.3 && isPlayingSystemAudio) {
+          console.log("Echo rejected: Low confidence during audio playback");
+          return true;
+        }
+        
+        // If we have frequency data, analyze it
+        if (audioAnalyser) {
+          // Get current frequency data
+          const frequencyData = new Uint8Array(audioAnalyser.frequencyBinCount);
+          audioAnalyser.getByteFrequencyData(frequencyData);
+          
+          // Check if current audio has human voice characteristics
+          const humanVoiceScore = analyzeForHumanVoice(frequencyData);
+          
+          if (humanVoiceScore < 0.1) {
+            console.log(`Echo rejected: Low human voice score (${humanVoiceScore.toFixed(3)})`);
+            return true;
+          }
+        }
+        
+        // Passed all checks, likely not an echo
+        console.log("Not an echo: Passed all checks");
+        return false;
+      }
+      
+      // Function to analyze audio for human voice patterns
+      function analyzeForHumanVoice(frequencyData) {
+        if (!frequencyData || !audioContext) return 0;
+        
+        const binCount = frequencyData.length;
+        const sampleRate = audioContext.sampleRate;
+        const binSize = sampleRate / (binCount * 2);
+        
+        // Define frequency ranges for human voice
+        // Human voice fundamental frequencies are typically:
+        // - Adult male: ~85-180 Hz
+        // - Adult female: ~165-255 Hz
+        // - Plus harmonics up to ~3000 Hz
+        
+        const maleLowBin = Math.floor(85 / binSize);
+        const maleHighBin = Math.floor(180 / binSize);
+        const femaleLowBin = Math.floor(165 / binSize);
+        const femaleHighBin = Math.floor(255 / binSize);
+        const harmonicsHighBin = Math.floor(3000 / binSize);
+        
+        let totalEnergy = 0;
+        let fundamentalEnergy = 0;
+        let harmonicsEnergy = 0;
+        let nonVoiceEnergy = 0;
+        
+        // Calculate energy in different bands
+        for (let i = 0; i < binCount; i++) {
+          const energy = frequencyData[i];
+          totalEnergy += energy;
+          
+          if ((i >= maleLowBin && i <= maleHighBin) || 
+              (i >= femaleLowBin && i <= femaleHighBin)) {
+            // Energy in fundamental frequency ranges
+            fundamentalEnergy += energy;
+          } else if (i > femaleHighBin && i <= harmonicsHighBin) {
+            // Energy in harmonics range
+            harmonicsEnergy += energy;
+          } else {
+            // Energy outside voice range
+            nonVoiceEnergy += energy;
+          }
+        }
+        
+        if (totalEnergy === 0) return 0;
+        
+        // Calculate proportion of energy in voice-related frequencies
+        const fundamentalRatio = fundamentalEnergy / totalEnergy;
+        const harmonicsRatio = harmonicsEnergy / totalEnergy;
+        const nonVoiceRatio = nonVoiceEnergy / totalEnergy;
+        
+        // Human voice typically has strong fundamentals and some harmonics
+        // This creates a weighted score that prioritizes fundamental frequencies
+        return (fundamentalRatio * 0.6) + (harmonicsRatio * 0.3) - (nonVoiceRatio * 0.1);
+      }
+      
+      // Function to resume audio playback
+      function resumeAudioPlayback() {
+        if (window.currentAudio) {
+          // Check if we're playing non-English audio (Hindi or Kannada)
+          const isNonEnglishAudio = window.currentLanguage && (window.currentLanguage === 'hi' || window.currentLanguage === 'kn');
+          
+          window.currentAudio.play()
+            .then(() => {
+              console.log("Audio playback resumed");
+              document.getElementById("play-summary").style.display = "none";
+              document.getElementById("pause-summary").style.display = "inline-block";
+              isPlayingSystemAudio = true;
+              
+              // Use a very short cooldown to allow wake word detection almost immediately
+              audioPlaybackCooldown = true;
+              setTimeout(() => {
+                audioPlaybackCooldown = false;
+                console.log("Audio playback cooldown ended after resume");
+              }, AUDIO_COOLDOWN_DURATION);
+              
+              // Force restart recognition
+              setTimeout(() => {
+                if (!isListening) {
+                  console.log("Restarting recognition after resume command");
+                  startListening();
+                }
+              }, 500);
+            })
+            .catch(err => {
+              console.error("Failed to resume audio:", err);
+            });
+        } else if (window.speechSynthesis && window.speechSynthesis.speaking) {
+          window.speechSynthesis.resume();
+          document.getElementById("play-summary").style.display = "none";
+          document.getElementById("pause-summary").style.display = "inline-block";
+        }
+      }
+      
+      // Function to play audio
+      function playAudio() {
+        if (!window.audioData) {
+          console.error("No audio data available");
+          return;
+        }
+        
+        try {
+          // If there's already an audio element playing, stop it
+          if (window.currentAudio) {
+            window.currentAudio.pause();
+            
+            // Clear any existing audio monitoring
+            if (audioMonitoringInterval) {
+              clearInterval(audioMonitoringInterval);
+              audioMonitoringInterval = null;
+            }
+          }
+          
+          // Create a new audio element
+          const audio = new Audio();
+          
+          // Set the audio source using the base64 data
+          audio.src = "data:audio/mp3;base64," + window.audioData;
+          
+          // Check if we're playing non-English audio (Hindi or Kannada)
+          const isNonEnglishAudio = window.currentLanguage && (window.currentLanguage === 'hi' || window.currentLanguage === 'kn');
+          
+          // Reduce volume significantly to make wake word detection easier
+          // Further reduce volume for non-English audio which may have different characteristics
+          audio.volume = isNonEnglishAudio ? 0.5 : 0.6;
+          
+          console.log(`Audio language: ${window.currentLanguage || 'en'}, Volume set to: ${audio.volume}`);
+          
+          // Set up event listeners
+          audio.addEventListener('loadedmetadata', function() {
+            console.log("Audio duration:", audio.duration);
+            document.getElementById("audio-time").textContent = `0:00 / ${formatTime(audio.duration)}`;
+          });
+          
+          audio.addEventListener('timeupdate', function() {
+            document.getElementById("audio-time").textContent = 
+              `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+          });
+          
+          audio.addEventListener('ended', function() {
+            document.getElementById("play-summary").style.display = "inline-block";
+            document.getElementById("pause-summary").style.display = "none";
+            isPlayingSystemAudio = false;
+            wakeWordSensitivityReduced = false;
+            currentWakeWordThreshold = WAKE_WORD_NORMAL_THRESHOLD;
+            
+            // Clear audio monitoring
+            if (audioMonitoringInterval) {
+              clearInterval(audioMonitoringInterval);
+              audioMonitoringInterval = null;
+            }
+            
+            // Restart voice recognition after audio playback ends
+            setTimeout(() => {
+              if (!isListening) {
+                console.log("Restarting voice recognition after audio playback ended");
+                startListening();
+              }
+            }, 500);
+          });
+          
+          audio.addEventListener('error', function(e) {
+            console.error("Audio playback error:", e);
+            document.getElementById("play-summary").style.display = "inline-block";
+            document.getElementById("pause-summary").style.display = "none";
+            document.getElementById("audio-time").style.display = "none";
+            
+            // Clear audio monitoring
+            if (audioMonitoringInterval) {
+              clearInterval(audioMonitoringInterval);
+              audioMonitoringInterval = null;
+            }
+          });
+          
+          // Start playing
+          audio.play()
+            .then(() => {
+              console.log("Audio playback started");
+              // Update UI
+              document.getElementById("play-summary").style.display = "none";
+              document.getElementById("pause-summary").style.display = "inline-block";
+              document.getElementById("audio-time").style.display = "inline-block";
+              
+              // Update state
+              window.currentAudio = audio;
+              isPlayingSystemAudio = true;
+              audioPlaybackStartTime = Date.now();
+              
+              // Use a very short cooldown to allow wake word detection almost immediately
+              audioPlaybackCooldown = true;
+              setTimeout(() => {
+                audioPlaybackCooldown = false;
+                console.log("Audio playback cooldown ended - now fully receptive to wake word");
+                
+                // Set extremely low threshold for wake word detection during audio playback
+                // Use even lower threshold for non-English audio
+                wakeWordSensitivityReduced = true; // Restore the original behavior
+                currentWakeWordThreshold = isNonEnglishAudio ? 10 : WAKE_WORD_REDUCED_THRESHOLD;
+                console.log(`Wake word threshold set to ${currentWakeWordThreshold} for ${isNonEnglishAudio ? 'non-English' : 'English'} audio`);
+              }, AUDIO_COOLDOWN_DURATION);
+              
+              // Force restart recognition to ensure it's active during audio playback
+              if (isListening) {
+                // If already listening, stop first to ensure a clean restart
+                stopListening();
+              }
+              
+              // Slight delay before restarting to ensure clean state
+              setTimeout(() => {
+                console.log("Restarting recognition during audio playback");
+                startListening();
+                
+                // Set up periodic recognition restart to ensure it stays active
+                audioMonitoringInterval = setInterval(() => {
+                  if (!isListening && audio && !audio.paused) {
+                    console.log("Periodic recognition restart during audio playback");
+                    startListening();
+                  }
+                }, 5000); // Check every 5 seconds
+              }, 300);
+            })
+            .catch(err => {
+              console.error("Failed to play audio:", err);
+            });
+        } catch (err) {
+          console.error("Error setting up audio playback:", err);
+        }
+      }
+      
+      // Function to pause audio
+      function pauseAudio() {
+        if (window.currentAudio) {
+          window.currentAudio.pause();
+          document.getElementById("play-summary").style.display = "inline-block";
+          document.getElementById("pause-summary").style.display = "none";
+          isPlayingSystemAudio = false;
+          wakeWordSensitivityReduced = false;
+          currentWakeWordThreshold = WAKE_WORD_NORMAL_THRESHOLD;
+          
+          // Clear audio monitoring
+          if (audioMonitoringInterval) {
+            clearInterval(audioMonitoringInterval);
+            audioMonitoringInterval = null;
+          }
+        }
+      }
+      
+      // Function to skip audio
+      function skipAudio(seconds) {
+        if (window.currentAudio) {
+          const newTime = window.currentAudio.currentTime + seconds;
+          
+          // Ensure we don't go beyond the bounds of the audio
+          if (newTime < 0) {
+            window.currentAudio.currentTime = 0;
+          } else if (newTime > window.currentAudio.duration) {
+            window.currentAudio.pause();
+            window.currentAudio.currentTime = 0;
+            document.getElementById("play-summary").style.display = "inline-block";
+            document.getElementById("pause-summary").style.display = "none";
+            isPlayingSystemAudio = false;
+            wakeWordSensitivityReduced = false;
+            currentWakeWordThreshold = WAKE_WORD_NORMAL_THRESHOLD;
+          } else {
+            window.currentAudio.currentTime = newTime;
+          }
+        }
+      }
+      
+      // Function to format time
+      function formatTime(time) {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      }
+    </script>
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    
+    <!-- Continuous Voice Recognition System -->
+    <script src="/static/js/continuous-voice-recognition.js"></script>
+  </body>
+</html>
+
+<script>
+  // Function to provide audio feedback for commands
+  function provideAudioFeedback(message) {
+    console.log(`provideAudioFeedback called with message: "${message}"`);
+    
+    // Skip feedback if audio is currently playing - EXCEPT for "Audio stopped" message
+    if (window.currentAudio && !window.currentAudio.paused && message !== "Audio stopped") {
+      console.log("Skipping audio feedback because audio is already playing");
+      return;
+    }
+    
+    console.log(`Providing audio feedback: "${message}"`);
+    
+    try {
+      // Use speech synthesis for feedback
+      const utterance = new SpeechSynthesisUtterance(message);
+      
+      // Set voice properties
+      utterance.volume = 1.0; 
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.lang = 'en-US';
+      
+      // Try to get available voices
+      let voices = window.speechSynthesis.getVoices();
+      
+      // If voices aren't loaded yet, wait for them
+      if (voices.length === 0) {
+        window.speechSynthesis.onvoiceschanged = function() {
+          voices = window.speechSynthesis.getVoices();
+          setVoice();
+        };
+      } else {
+        setVoice();
+      }
+      
+      function setVoice() {
+        // Get a female voice if available
+        const femaleVoice = voices.find(voice => 
+          voice.name.includes('female') || 
+          voice.name.includes('Female') || 
+          voice.name.includes('Google UK English Female') ||
+          voice.name.includes('Microsoft Zira')
+        );
+        
+        if (femaleVoice) {
+          utterance.voice = femaleVoice;
+          console.log(`Using voice: ${femaleVoice.name}`);
+        } else {
+          console.log("No female voice found, using default voice");
+        }
+      }
+      
+      // Set flags for echo cancellation
+      isPlayingSystemAudio = true;
+      audioPlaybackStartTime = Date.now();
+      
+      // Speak the feedback
+      window.speechSynthesis.speak(utterance);
+      
+      // Reset flags after speech ends
+      utterance.onend = function() {
+        console.log("Audio feedback completed");
+        isPlayingSystemAudio = false;
+        
+        // Restart recognition if needed
+        setTimeout(() => {
+          if (!isListening) {
+            console.log("Restarting recognition after audio feedback");
+            startListening();
+          }
+        }, 500);
+      };
+      
+      // Handle errors
+      utterance.onerror = function(event) {
+        console.error("Speech synthesis error:", event);
+        isPlayingSystemAudio = false;
+      };
+    } catch (error) {
+      console.error("Error providing audio feedback:", error);
+    }
+  }
+</script>
