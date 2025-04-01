@@ -10,3 +10,4 @@ openai
 transformers
 pydub
 newspaper3k
+gunicorn
