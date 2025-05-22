@@ -1,0 +1,694 @@
+2025-05-07 14:11:58.273199: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-05-07 14:12:01.149916: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+INFO:enhanced_summarization:Using model cache directory: C:\Users\Karthik Shetty.K\Desktop\Deploy\model_cache
+INFO:enhanced_summarization:Successfully loaded OpenAI API key: sk-proj-Ci...
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.26.245:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with stat
+C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\transformers\utils\hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+INFO:enhanced_summarization:Using model cache directory: C:\Users\Karthik Shetty.K\Desktop\Deploy\model_cache
+INFO:enhanced_summarization:Successfully loaded OpenAI API key: sk-proj-Ci...
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 294-600-503
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:16:38] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:16:39] "[36mGET /static/Louis1.jpg HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:16:51] "POST /search HTTP/1.1" 200 -
+INFO:__main__:Processing URL: https://en.wikipedia.org/wiki/Python_%28programming_language%29
+INFO:enhanced_summarization:Extracting content with newspaper3k from https://en.wikipedia.org/wiki/Python_%28programming_language%29
+INFO:enhanced_summarization:newspaper3k extracted 44488 characters
+INFO:enhanced_summarization:Starting integrated summarization for URL: https://en.wikipedia.org/wiki/Python_%28programming_language%29
+INFO:enhanced_summarization:Attempting summarization with Gemini Pro 1.5
+INFO:enhanced_summarization:Initializing Gemini Pro 1.5-pro-latest summarization...
+INFO:enhanced_summarization:Sending request to Gemini Pro 1.5 API...
+ERROR:enhanced_summarization:Gemini API request failed with status code 429: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "model": "gemini-1.5-pro",
+              "location": "global"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "42s"
+      }
+    ]
+  }
+}
+
+INFO:enhanced_summarization:Attempting summarization with GPT-2
+INFO:enhanced_summarization:Attempting to summarize with GPT-2
+ERROR:enhanced_summarization:Error in GPT-2 summarization: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 330, in summarize_with_gpt2
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\transformers\tokenization_utils_base.py", line 2046, in from_pretrained
+    raise EnvironmentError(
+OSError: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+INFO:enhanced_summarization:Attempting summarization with OpenAI
+INFO:enhanced_summarization:Using API key: sk-proj-Ci...
+ERROR:enhanced_summarization:Error in OpenAI summarization: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 385, in summarize_with_gpt
+    from openai import OpenAI
+ImportError: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+INFO:enhanced_summarization:Using key sentences extraction as fallback
+INFO:__main__:Generating audio with Google TTS for language: en
+INFO:__main__:Downloaded chunk 1/3
+INFO:__main__:Downloaded chunk 2/3
+INFO:__main__:Downloaded chunk 3/3
+INFO:__main__:Cached audio for language: en
+INFO:__main__:Cached result for URL: https://en.wikipedia.org/wiki/Python_%28programming_language%29
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:17:17] "POST /process HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:23:13] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:23:13] "[36mGET /static/Louis1.jpg HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:23:21] "POST /search HTTP/1.1" 200 -
+ERROR:__main__:Error retrieving from cache: Error while reading from redis-10473.c330.asia-south1-1.gce.redns.redis-cloud.com:10473 : (10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\connection.py", line 592, in read_response
+    response = self._parser.read_response(disable_decoding=disable_decoding)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\_parsers\resp2.py", line 15, in read_response
+    result = self._read_response(disable_decoding=disable_decoding)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\_parsers\resp2.py", line 25, in _read_response
+    raw = self._buffer.readline()
+          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\_parsers\socket.py", line 115, in readline
+    self._read_from_socket()
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\_parsers\socket.py", line 65, in _read_from_socket
+    data = self._sock.recv(socket_read_size)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\app.py", line 559, in process_url
+    cached_result = redis_client.get(cache_key)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\commands\core.py", line 1822, in get
+    return self.execute_command("GET", name, keys=[name])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 559, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 567, in _execute_command
+    return conn.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\retry.py", line 65, in call_with_retry
+    fail(error)
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 571, in <lambda>
+    lambda error: self._disconnect_raise(conn, error),
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 555, in _disconnect_raise
+    raise error
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\retry.py", line 62, in call_with_retry
+    return do()
+           ^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 568, in <lambda>
+    lambda: self._send_command_parse_response(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 542, in _send_command_parse_response
+    return self.parse_response(conn, command_name, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 584, in parse_response
+    response = connection.read_response()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\connection.py", line 600, in read_response
+    raise ConnectionError(
+redis.exceptions.ConnectionError: Error while reading from redis-10473.c330.asia-south1-1.gce.redns.redis-cloud.com:10473 : (10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)
+INFO:__main__:Processing URL: https://en.wikipedia.org/wiki/Java
+INFO:enhanced_summarization:Extracting content with newspaper3k from https://en.wikipedia.org/wiki/Java
+INFO:enhanced_summarization:newspaper3k extracted 36924 characters
+INFO:enhanced_summarization:Starting integrated summarization for URL: https://en.wikipedia.org/wiki/Java
+INFO:enhanced_summarization:Attempting summarization with Gemini Pro 1.5
+INFO:enhanced_summarization:Initializing Gemini Pro 1.5-pro-latest summarization...
+INFO:enhanced_summarization:Sending request to Gemini Pro 1.5 API...
+ERROR:enhanced_summarization:Gemini API request failed with status code 429: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "model": "gemini-1.5-pro",
+              "location": "global"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "11s"
+      }
+    ]
+  }
+}
+
+INFO:enhanced_summarization:Attempting summarization with GPT-2
+INFO:enhanced_summarization:Attempting to summarize with GPT-2
+ERROR:enhanced_summarization:Error in GPT-2 summarization: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 330, in summarize_with_gpt2
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\transformers\tokenization_utils_base.py", line 2046, in from_pretrained
+    raise EnvironmentError(
+OSError: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+INFO:enhanced_summarization:Attempting summarization with OpenAI
+INFO:enhanced_summarization:Using API key: sk-proj-Ci...
+ERROR:enhanced_summarization:Error in OpenAI summarization: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 385, in summarize_with_gpt
+    from openai import OpenAI
+ImportError: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+INFO:enhanced_summarization:Using key sentences extraction as fallback
+INFO:__main__:Generating audio with Google TTS for language: en
+INFO:__main__:Downloaded chunk 4/7
+INFO:__main__:Downloaded chunk 5/7
+INFO:__main__:Downloaded chunk 3/7
+INFO:__main__:Downloaded chunk 2/7
+INFO:__main__:Downloaded chunk 6/7
+INFO:__main__:Downloaded chunk 7/7
+INFO:__main__:Downloaded chunk 1/7
+INFO:__main__:Cached audio for language: en
+INFO:__main__:Cached result for URL: https://en.wikipedia.org/wiki/Java
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:23:51] "POST /process HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:24:24] "POST /search HTTP/1.1" 200 -
+INFO:__main__:Processing URL: https://en.wikipedia.org/wiki/Harry_Potter
+INFO:enhanced_summarization:Extracting content with newspaper3k from https://en.wikipedia.org/wiki/Harry_Potter
+INFO:enhanced_summarization:newspaper3k extracted 64718 characters
+INFO:enhanced_summarization:Starting integrated summarization for URL: https://en.wikipedia.org/wiki/Harry_Potter
+INFO:enhanced_summarization:Attempting summarization with Gemini Pro 1.5
+INFO:enhanced_summarization:Initializing Gemini Pro 1.5-pro-latest summarization...
+INFO:enhanced_summarization:Sending request to Gemini Pro 1.5 API...
+ERROR:enhanced_summarization:Gemini API request failed with status code 429: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "10s"
+      }
+    ]
+  }
+}
+
+INFO:enhanced_summarization:Attempting summarization with GPT-2
+INFO:enhanced_summarization:Attempting to summarize with GPT-2
+ERROR:enhanced_summarization:Error in GPT-2 summarization: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 330, in summarize_with_gpt2
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\transformers\tokenization_utils_base.py", line 2046, in from_pretrained
+    raise EnvironmentError(
+OSError: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+INFO:enhanced_summarization:Attempting summarization with OpenAI
+INFO:enhanced_summarization:Using API key: sk-proj-Ci...
+ERROR:enhanced_summarization:Error in OpenAI summarization: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 385, in summarize_with_gpt
+    from openai import OpenAI
+ImportError: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+INFO:enhanced_summarization:Using key sentences extraction as fallback
+INFO:__main__:Generating audio with Google TTS for language: en
+INFO:__main__:Downloaded chunk 3/7
+INFO:__main__:Downloaded chunk 7/7
+INFO:__main__:Downloaded chunk 5/7
+INFO:__main__:Downloaded chunk 2/7
+INFO:__main__:Downloaded chunk 6/7
+INFO:__main__:Downloaded chunk 1/7
+INFO:__main__:Downloaded chunk 4/7
+INFO:__main__:Cached audio for language: en
+INFO:__main__:Cached result for URL: https://en.wikipedia.org/wiki/Harry_Potter
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:24:48] "POST /process HTTP/1.1" 200 -
+INFO:werkzeug: * Detected change in 'C:\\Users\\Karthik Shetty.K\\Desktop\\Deploy\\enhanced_summarization.py', reloading
+INFO:werkzeug: * Restarting with stat
+C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\transformers\utils\hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+INFO:enhanced_summarization:Using model cache directory: C:\Users\Karthik Shetty.K\Desktop\Deploy\model_cache
+INFO:enhanced_summarization:Successfully loaded OpenAI API key: sk-proj-Ci...
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 294-600-503
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:35:24] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:35:25] "[36mGET /static/Louis1.jpg HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:35:36] "POST /search HTTP/1.1" 200 -
+ERROR:__main__:Error retrieving from cache: Error while reading from redis-10473.c330.asia-south1-1.gce.redns.redis-cloud.com:10473 : (10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\connection.py", line 592, in read_response
+    response = self._parser.read_response(disable_decoding=disable_decoding)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\_parsers\resp2.py", line 15, in read_response
+    result = self._read_response(disable_decoding=disable_decoding)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\_parsers\resp2.py", line 25, in _read_response
+    raw = self._buffer.readline()
+          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\_parsers\socket.py", line 115, in readline
+    self._read_from_socket()
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\_parsers\socket.py", line 65, in _read_from_socket
+    data = self._sock.recv(socket_read_size)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\app.py", line 559, in process_url
+    cached_result = redis_client.get(cache_key)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\commands\core.py", line 1822, in get
+    return self.execute_command("GET", name, keys=[name])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 559, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 567, in _execute_command
+    return conn.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\retry.py", line 65, in call_with_retry
+    fail(error)
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 571, in <lambda>
+    lambda error: self._disconnect_raise(conn, error),
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 555, in _disconnect_raise
+    raise error
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\retry.py", line 62, in call_with_retry
+    return do()
+           ^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 568, in <lambda>
+    lambda: self._send_command_parse_response(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 542, in _send_command_parse_response
+    return self.parse_response(conn, command_name, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 584, in parse_response
+    response = connection.read_response()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\connection.py", line 600, in read_response
+    raise ConnectionError(
+redis.exceptions.ConnectionError: Error while reading from redis-10473.c330.asia-south1-1.gce.redns.redis-cloud.com:10473 : (10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)
+INFO:__main__:Processing URL: https://en.wikipedia.org/wiki/Royal_Challengers_Bengaluru
+INFO:enhanced_summarization:Extracting content with newspaper3k from https://en.wikipedia.org/wiki/Royal_Challengers_Bengaluru
+INFO:enhanced_summarization:newspaper3k extracted 30159 characters
+INFO:enhanced_summarization:Starting integrated summarization for URL: https://en.wikipedia.org/wiki/Royal_Challengers_Bengaluru
+INFO:enhanced_summarization:Attempting summarization with Gemini Pro 1.5
+INFO:enhanced_summarization:Initializing Gemini Pro 1.5-pro-latest summarization...
+INFO:enhanced_summarization:Sending request to Gemini Pro 1.5 API...
+ERROR:enhanced_summarization:Gemini API request failed with status code 429: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "model": "gemini-1.5-pro",
+              "location": "global"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "2s"
+      }
+    ]
+  }
+}
+
+INFO:enhanced_summarization:Attempting summarization with GPT-2
+INFO:enhanced_summarization:Attempting to summarize with GPT-2
+ERROR:enhanced_summarization:Error in GPT-2 summarization: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 335, in summarize_with_gpt2
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\transformers\tokenization_utils_base.py", line 2046, in from_pretrained
+    raise EnvironmentError(
+OSError: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+INFO:enhanced_summarization:Attempting summarization with OpenAI
+INFO:enhanced_summarization:Using API key: sk-proj-Ci...
+ERROR:enhanced_summarization:Error in OpenAI summarization: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 399, in summarize_with_gpt
+    from openai import OpenAI
+ImportError: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+INFO:enhanced_summarization:Using key sentences extraction as fallback
+INFO:__main__:Generating audio with Google TTS for language: en
+INFO:__main__:Downloaded chunk 1/7
+INFO:__main__:Downloaded chunk 2/7
+INFO:__main__:Downloaded chunk 7/7
+INFO:__main__:Downloaded chunk 4/7
+INFO:__main__:Downloaded chunk 5/7
+INFO:__main__:Downloaded chunk 3/7
+INFO:__main__:Downloaded chunk 6/7
+INFO:__main__:Cached audio for language: en
+INFO:__main__:Cached result for URL: https://en.wikipedia.org/wiki/Royal_Challengers_Bengaluru
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:35:51] "POST /process HTTP/1.1" 200 -
+INFO:werkzeug: * Detected change in 'C:\\Users\\Karthik Shetty.K\\Desktop\\Deploy\\enhanced_summarization.py', reloading
+Exception in thread Thread-2 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+INFO:werkzeug: * Restarting with stat
+C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\transformers\utils\hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+INFO:enhanced_summarization:Using model cache directory: C:\Users\Karthik Shetty.K\Desktop\Deploy\model_cache
+INFO:enhanced_summarization:Successfully loaded OpenAI API key: sk-proj-Ci...
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 294-600-503
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:38:42] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:38:43] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:38:43] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:38:43] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:38:43] "[36mGET /static/Louis1.jpg HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:38:49] "POST /search HTTP/1.1" 200 -
+INFO:__main__:Processing URL: https://en.wikipedia.org/wiki/Chennai_Super_Kings
+INFO:enhanced_summarization:Extracting content with newspaper3k from https://en.wikipedia.org/wiki/Chennai_Super_Kings
+INFO:enhanced_summarization:newspaper3k extracted 25534 characters
+INFO:enhanced_summarization:Starting integrated summarization for URL: https://en.wikipedia.org/wiki/Chennai_Super_Kings
+INFO:enhanced_summarization:Attempting summarization with Gemini Pro 1.5
+INFO:enhanced_summarization:Initializing Gemini Pro 1.5-pro-latest summarization...
+INFO:enhanced_summarization:Sending request to Gemini Pro 1.5 API...
+ERROR:enhanced_summarization:Gemini API request failed with status code 429: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "49s"
+      }
+    ]
+  }
+}
+
+INFO:enhanced_summarization:Attempting summarization with GPT-2
+INFO:enhanced_summarization:Attempting to summarize with GPT-2
+ERROR:enhanced_summarization:Error in GPT-2 summarization: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 351, in summarize_with_gpt2
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\transformers\tokenization_utils_base.py", line 2046, in from_pretrained
+    raise EnvironmentError(
+OSError: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+INFO:enhanced_summarization:Attempting summarization with OpenAI
+INFO:enhanced_summarization:Using API key: sk-proj-Ci...
+ERROR:enhanced_summarization:Error in OpenAI summarization: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 430, in summarize_with_gpt
+    from openai import OpenAI
+ImportError: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+INFO:enhanced_summarization:Using key sentences extraction as fallback
+INFO:__main__:Generating audio with Google TTS for language: en
+INFO:__main__:Downloaded chunk 6/6
+INFO:__main__:Downloaded chunk 1/6
+INFO:__main__:Downloaded chunk 4/6
+INFO:__main__:Downloaded chunk 3/6
+INFO:__main__:Downloaded chunk 2/6
+INFO:__main__:Downloaded chunk 5/6
+INFO:__main__:Cached audio for language: en
+INFO:__main__:Cached result for URL: https://en.wikipedia.org/wiki/Chennai_Super_Kings
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:39:04] "POST /process HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:39:31] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:39:31] "[36mGET /static/Louis1.jpg HTTP/1.1[0m" 304 -
+INFO:openai:error_code=model_not_found error_message='The model `gpt-4` does not exist or you do not have access to it.' error_param=None error_type=invalid_request_error message='OpenAI API error received' stream_error=False
+ERROR:__main__:GPT-4 correction failed: The model `gpt-4` does not exist or you do not have access to it.
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:39:43] "POST /correct-voice-command HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:39:46] "POST /search HTTP/1.1" 200 -
+INFO:__main__:Processing URL: https://en.wikipedia.org/wiki/Pythagorean_theorem
+INFO:enhanced_summarization:Extracting content with newspaper3k from https://en.wikipedia.org/wiki/Pythagorean_theorem
+INFO:enhanced_summarization:newspaper3k extracted 57221 characters
+INFO:enhanced_summarization:Starting integrated summarization for URL: https://en.wikipedia.org/wiki/Pythagorean_theorem
+INFO:enhanced_summarization:Attempting summarization with Gemini Pro 1.5
+INFO:enhanced_summarization:Initializing Gemini Pro 1.5-pro-latest summarization...
+INFO:enhanced_summarization:Sending request to Gemini Pro 1.5 API...
+ERROR:enhanced_summarization:Gemini API request failed with status code 429: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-1.5-pro"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "51s"
+      }
+    ]
+  }
+}
+
+INFO:enhanced_summarization:Attempting summarization with GPT-2
+INFO:enhanced_summarization:Attempting to summarize with GPT-2
+ERROR:enhanced_summarization:Error in GPT-2 summarization: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 351, in summarize_with_gpt2
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\transformers\tokenization_utils_base.py", line 2046, in from_pretrained
+    raise EnvironmentError(
+OSError: Can't load tokenizer for 'gpt2'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'gpt2' is the correct path to a directory containing all relevant files for a GPT2Tokenizer tokenizer.
+INFO:enhanced_summarization:Attempting summarization with OpenAI
+INFO:enhanced_summarization:Using API key: sk-proj-Ci...
+ERROR:enhanced_summarization:Error in OpenAI summarization: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+Traceback (most recent call last):
+  File "C:\Users\Karthik Shetty.K\Desktop\Deploy\enhanced_summarization.py", line 430, in summarize_with_gpt
+    from openai import OpenAI
+ImportError: cannot import name 'OpenAI' from 'openai' (C:\Users\Karthik Shetty.K\AppData\Local\Programs\Python\Python312\Lib\site-packages\openai\__init__.py)
+INFO:enhanced_summarization:Using key sentences extraction as fallback
+INFO:__main__:Generating audio with Google TTS for language: en
+ERROR:__main__:Error downloading chunk 2: 400 Client Error: Bad Request for url: https://translate.google.com/translate_tts?ie=UTF-8&q=Because+the+ratio+of+the+area+of+a+right+triangle+to+the+square+of+its+hypotenuse+is+the+same+for+similar+triangles%2C+the+relationship+between+the+areas+of+the+three+triangles+holds+for+the+squares+of+the+sides+of+the+large+triangle+as+well.&tl=en&client=tw-ob&ttsspeed=1.0
+INFO:__main__:Downloaded chunk 8/8
+INFO:__main__:Downloaded chunk 7/8
+INFO:__main__:Downloaded chunk 6/8
+INFO:__main__:Downloaded chunk 4/8
+INFO:__main__:Downloaded chunk 2/8
+INFO:__main__:Downloaded chunk 5/8
+INFO:__main__:Downloaded chunk 1/8
+INFO:__main__:Cached audio for language: en
+INFO:__main__:Cached result for URL: https://en.wikipedia.org/wiki/Pythagorean_theorem
+INFO:werkzeug:127.0.0.1 - - [07/May/2025 14:40:02] "POST /process HTTP/1.1" 200 -
+INFO:werkzeug: * Detected change in 'C:\\Users\\Karthik Shetty.K\\Desktop\\Deploy\\enhanced_summarization.py', reloading
+INFO:werkzeug: * Restarting with stat
+^C

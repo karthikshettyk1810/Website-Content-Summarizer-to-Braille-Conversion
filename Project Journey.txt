@@ -1,0 +1,154 @@
+Braille Research
+Grades of Braille
+Bharthi Braille and Devanagiri Braille and UE Braille
+
+Characters mapping unique 6 dots
+punctuations for both hindi and Kannada characters
+
+Map individual characters with corresponding braille using Look Up Dictionary and String methods
+
+==================================================================================================
+
+Using custom search bar using HTML element and use .value() to get the searched topic
+
+Used Google Search Engine  GSE and CSE of google for getting the over the same page
+
+For the same we had to visit google website and get the ID and API key for using it
+
+Then appending the searched topic to the Wikipedia query + topic and get the Wikipedia result as link to be used
+
+==================================================================================================
+
+Later using Web Scraping methods like "beautifulsoup5 bs4", "newspaper3k" important and "Article" modules
+
+Next using NLTK (Natural Language Tool Kit), Stop words for extracting meaningful sentences from the modules
+
+==================================================================================================
+
+Initially we depended on manual summarization techniques like mapping using nltk, bs4 etc 
+
+Later realized that it was barely accurate and not meaningful content
+
+==================================================================================================
+
+Crucial Part
+
+Later realized main thing ie (LLM) The great Large Language Models best for high end tasks and gives faster and meaningful results
+
+Tried using all offline models like T5 by google and Pegasus , GPT2 from OpenAI but was taking too much of time and not producing efficient summary
+
+Later removed all and use the Google Latest Models like (Gemini-1.5-pro) and Now using the most Latest (Gemini-2.0-Flash) models which
+increased the efficiency and accuracy to very high ~ 99%
+
+Bought this gemini trail version from the google AI studio and used Get API Key and got free tier version for use
+
+==================================================================================================
+
+Audio Generation Part
+
+Then comes the audio part where we can generate the audio of the summarized content
+
+After research we got to know we can use gTTS (Google-Text-To-Speech) where it converted all the summarized
+contents to selected language
+
+Also tried different offline voice models like eSpeak ng and Microsoft zara etc but it was not humanly.
+
+but the audio generation was too slow bcoz we were trying convert the whole text to audio at a single shot
+which overloads and gives a very delayed audio output
+
+Then we used the Idea of "Divide and Conquer" method where we divide the summarized text into multiple small 
+chunks and then load it to gTTS for conversion
+
+But no speed was increased but not completely as it was using sequence order execution that is chunk 1,chunk 2 and chunk n
+where if any chunk fails in between will stop the execution and processing will come to end and delays
+
+So thought the idea of parallel processing where after dividing it into smaller chunks we made it random ordered where now it won't
+depend on the sequence but produces parallel processing and gives better faster results
+
+==================================================================================================
+
+Redis
+
+Now we observed that if we are trying to summarize a topic details multiple times it is taking 
+same time for every attempt for the same topic
+
+Then we used the idea of caching and came across a great tool called "REDIS DATABASE"
+
+We used this created a account and started using free tier after generating the API Key of the REDIS
+
+This made sure that if same data needs to fetched then it stores the data to the cache in the cloud or local
+memory and when the same topic data is requested it does not process and load it returns the result very fast
+
+==================================================================================================
+
+Main Voice Model
+
+As per our goal the main thing is accessibility where they can independently operate or use our tool
+
+So we planned to try out our own voice model and named it as "SAARA"
+
+This was very complex stage of our project
+
+Linking the command to each function and executing it
+
+We started with creating a WAKE WORD command called "HEY SAARA" and creating a object list with variations of SAARA like (SARA,SERA,HAI SAARA) etc 
+
+Then it starts listening and takes the users command as topic etc
+
+The flow was (Hey Saara -> Take Command as topic -> take language preferences -> take generate command -> Play audio/Stop Audio
+
+Then we made it free style where it does not depend on the ordered any command can be taken at any time and link
+that command to corresponding function to be performed
+
+But it was not ideal because it was not able to distinguish between our command and external voice or noises
+
+It was also not able to distinguish between System Audio and User Command especially during the audio playback
+
+Then we researched and used a concept called as "ECHO CANCELLATION" for compressing the system audio and trying to clearly listen to external voice command
+
+But still was not very accurate many flaws were found
+
+Again researched regarding high end voice models training then we got to know about we tools like (PORCUPINE) and (SNOWBOY) which 
+are used for efficient wake word detecting
+
+But due to their complex integration we could not implement it
+
+We also tried OpenAI ChatGPT voice models and Gemini Voice Models but these were not free to use so we skipped it
+
+==================================================================================================
+
+Approaching End
+
+As we came to complete it then we noticed that for very few topics there is no link or data in the wikipidea site
+
+So we added a fallback mechanism to send the topic to Gemini LLM if wikipidea data is not found for that topic
+
+All good later we noticed another problem that is when the user enters a topic incorrectly or spells it incorrectly
+during typing and it is not checked and directly being sent to the Wikipedia search query where it was not found
+
+So we created one more function called spell check where we used google auto correction using Gemini model
+where it automatically corrects the misspelled topic and then sends the corrected topic word to the Wikipedia which
+then gave correct link and data for summarizing
+
+==================================================================================================
+
+
+Addtional things
+
+
+We used multiple extensions for downloading like .txt,.word and mainly .BRF and .PEF which is meant for VI Users
+
+==================================================================================================
+
+This is the journey and came to an almost end
+
+
+==================================================================================================
+YOUTUBE Updates
+
+The youtube video was always had to redirect and play the video which is very unefficient so researched about it and
+got to know to update the iFrame to create mini screen to render the youtube video on to the same page by using
+fetch for getting the youtube Video ID for the searched topic from the user and use it to play the video in the same page 
+without redirecting to new page
+
+

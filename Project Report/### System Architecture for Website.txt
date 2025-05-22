@@ -1,0 +1,46 @@
+### **System Architecture for Website Content Summarizer to Braille Conversion**
+
+---
+
+#### **1. Input Layer**
+The input layer is where users interact with the system. A web-based interface, built with HTML, CSS, and JavaScript, collects user inputs such as the URL of the website and the target language for output. Flask templates serve this interface, ensuring seamless interaction between the user and the backend system. This layer ensures that inputs are validated to prevent errors, such as incomplete URLs or unsupported languages, before processing begins.
+
+---
+
+#### **2. Application Layer**
+This is the core processing unit of the system, responsible for executing all functional tasks to convert website content into Braille and audio. It is divided into several subcomponents:
+
+- **2.1 Website Content Fetcher**  
+  This module retrieves text data from the provided URL using `requests` and `BeautifulSoup`. It extracts meaningful content from HTML elements, such as `<p>` tags, while discarding unnecessary elements like ads or navigation menus. This ensures that only relevant textual content is processed.
+
+- **2.2 Text Summarizer**  
+  The summarizer reduces the extracted content to a concise version by retaining the most informative sentences. Using `nltk`, it tokenizes the text, removes stopwords, and analyzes word frequencies to identify key sentences. This step makes the output manageable while maintaining its core message.
+
+- **2.3 Text Translator**  
+  The translated module utilizes `googletrans` to convert the summarized content into the user-specified language. It handles a variety of languages, ensuring compatibility with Braille formats for Hindi, Kannada, and English. This step broadens the system's accessibility for users from diverse linguistic backgrounds.
+
+- **2.4 Braille Converter**  
+  This module maps the translated text into Bharti Braille or other supported Braille systems using predefined character mappings. Each language has its own mapping table to ensure accurate representation. This module plays a vital role in providing accessibility for visually impaired users by converting digital text into a tactile format.
+
+- **2.5 Audio Generator**  
+  For users preferring auditory output, this component converts the translated text into speech using `gTTS`. It generates an audio file that is stored on the server and made available for download. This feature enhances accessibility for users who rely on auditory assistance.
+
+---
+
+#### **3. Database Layer**
+The database layer stores and manages data at every stage of the process. Using MySQL or SQLite, it maintains normalized tables for inputs, extracted content, summarized text, translated content, Braille representations, and generated audio files. This design ensures data integrity, reduces redundancy, and allows efficient querying. Logs and history are also stored to provide insights into system usage and improve performance.
+
+---
+
+#### **4. Output Layer**
+The output layer delivers the processed data back to the user. The summarized text, translated text, and Braille representation are displayed in the user interface. Additionally, a link to download the audio file is provided. Flask handles the rendering of these outputs dynamically, while JavaScript ensures responsiveness. The user can easily access all results in one place, making the system intuitive and user-friendly.
+
+---
+
+#### **5. Deployment Infrastructure**
+The deployment infrastructure ensures that the system is accessible and performs well under different loads. The Flask application runs on a web server, such as `Gunicorn` or `uWSGI`, and is managed using a reverse proxy like `NGINX` or `Apache`. The system is hosted on cloud platforms like AWS, Google Cloud, or Heroku, offering scalability, security, and reliability. Regular monitoring and updates are performed to maintain high performance and address user feedback.
+
+--- 
+
+#### **6. Security and Maintenance**
+The system incorporates input validation, secure communication channels (SSL/TLS), and robust error handling to protect user data and ensure reliability. Scheduled database backups and cleanup routines maintain optimal storage and performance. Continuous monitoring allows for prompt detection of issues, ensuring a smooth user experience.
