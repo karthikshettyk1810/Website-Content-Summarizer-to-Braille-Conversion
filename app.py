@@ -90,7 +90,7 @@ load_dotenv()
 redis_host = 'redis-10473.c330.asia-south1-1.gce.redns.redis-cloud.com'
 redis_port = 10473
 redis_username = 'default'
-redis_password = 'lFNtMxdxllRsePZnSWt99xyL99YJR0vE'
+redis_password = ''#use your redis password after creating your redis account
 REDIS_AVAILABLE = False
 redis_client = None
 last_cache_clear_time = None
